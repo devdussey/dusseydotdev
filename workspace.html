@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Workspace | DevDussey</title>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+    min-height: 100vh;
+    color: #fff;
+  }
+
+  .header {
+    background: rgba(17, 24, 39, 0.6);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .header h1 {
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+
+  .user-email {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .btn-logout {
+    padding: 8px 20px;
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    color: #fca5a5;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+  }
+
+  .btn-logout:hover {
+    background: rgba(239, 68, 68, 0.3);
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px;
+  }
+
+  .welcome {
+    margin-bottom: 40px;
+  }
+
+  .welcome h2 {
+    font-size: 32px;
+    margin-bottom: 10px;
+  }
+
+  .welcome p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 16px;
+  }
+
+  .section {
+    margin-bottom: 50px;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+  }
+
+  .section-title {
+    font-size: 24px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .badge {
+    background: rgba(102, 126, 234, 0.2);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .btn-add {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .btn-add:hover {
+    transform: translateY(-2px);
+  }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+  }
+
+  .project-card {
+    background: rgba(17, 24, 39, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 25px;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border-color: rgba(102, 126, 234, 0.3);
+  }
+
+  .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 15px;
+  }
+
+  .project-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .project-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .icon-btn.delete:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+  }
+
+  .project-description {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 15px;
+  }
+
+  .project-links {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .project-link {
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+
+  .project-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    padding: 4px 10px;
+    background: rgba(102, 126, 234, 0.2);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 6px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .empty-state svg {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+    opacity: 0.3;
+  }
+
+  /* Modal */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal.show {
+    display: flex;
+  }
+
+  .modal-content {
+    background: rgba(17, 24, 39, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+
+  .modal-title {
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  .btn-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+  }
+
+  .btn-close:hover {
+    color: #fff;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .btn-submit:hover {
+    transform: translateY(-2px);
+  }
+
+  .loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  @media (max-width: 768px) {
+    .header {
+      flex-direction: column;
+      gap: 15px;
+      text-align: center;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .projects-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🚀 Workspace</h1>
+  <div class="header-actions">
+    <span class="user-email" id="userEmail"></span>
+    <button class="btn-logout" id="logoutBtn">Logout</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="welcome">
+    <h2>Welcome back! 👋</h2>
+    <p>Manage your projects and track progress</p>
+  </div>
+
+  <div class="loading" id="loading">Loading projects...</div>
+
+  <div id="projectsContainer" style="display: none;">
+    <!-- Current Projects -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          Current Projects
+          <span class="badge" id="currentCount">0</span>
+        </div>
+        <button class="btn-add" onclick="openModal('current')">+ Add Project</button>
+      </div>
+      <div class="projects-grid" id="currentProjects">
+        <!-- Projects will be inserted here -->
+      </div>
+    </div>
+
+    <!-- Finished Projects -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          Finished Projects
+          <span class="badge" id="finishedCount">0</span>
+        </div>
+        <button class="btn-add" onclick="openModal('finished')">+ Add Project</button>
+      </div>
+      <div class="projects-grid" id="finishedProjects">
+        <!-- Projects will be inserted here -->
+      </div>
+    </div>
+
+    <!-- Maintenance Projects -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          Maintenance
+          <span class="badge" id="maintenanceCount">0</span>
+        </div>
+        <button class="btn-add" onclick="openModal('maintenance')">+ Add Project</button>
+      </div>
+      <div class="projects-grid" id="maintenanceProjects">
+        <!-- Projects will be inserted here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Project Modal -->
+<div class="modal" id="projectModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalTitle">Add Project</h3>
+      <button class="btn-close" onclick="closeModal()">×</button>
+    </div>
+    <form id="projectForm">
+      <div class="form-group">
+        <label for="projectTitle">Project Title *</label>
+        <input type="text" id="projectTitle" required placeholder="Enter project name">
+      </div>
+
+      <div class="form-group">
+        <label for="projectDescription">Description</label>
+        <textarea id="projectDescription" placeholder="What is this project about?"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="projectStatus">Status *</label>
+        <select id="projectStatus" required>
+          <option value="current">Current</option>
+          <option value="finished">Finished</option>
+          <option value="maintenance">Maintenance</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="projectGithub">GitHub URL</label>
+        <input type="url" id="projectGithub" placeholder="https://github.com/username/repo">
+      </div>
+
+      <div class="form-group">
+        <label for="projectLive">Live URL</label>
+        <input type="url" id="projectLive" placeholder="https://example.com">
+      </div>
+
+      <div class="form-group">
+        <label for="projectTags">Tags (comma-separated)</label>
+        <input type="text" id="projectTags" placeholder="react, firebase, web">
+      </div>
+
+      <button type="submit" class="btn-submit" id="submitBtn">Add Project</button>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+  import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB-7IHqfyTn4OuFx36LNl5sAuVS-UjZF6g",
+    authDomain: "devdusseyworkspace.firebaseapp.com",
+    projectId: "devdusseyworkspace",
+    storageBucket: "devdusseyworkspace.firebasestorage.app",
+    messagingSenderId: "942897542939",
+    appId: "1:942897542939:web:edd79e871ad62d80c345be"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let currentUser = null;
+  let editingProjectId = null;
+
+  // Auth check
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = user;
+      document.getElementById('userEmail').textContent = user.email;
+      loadProjects();
+    } else {
+      window.location.href = 'login.html';
+    }
+  });
+
+  // Logout
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'index.html';
+  });
+
+  // Load projects
+  async function loadProjects() {
+    try {
+      const q = query(
+        collection(db, 'projects'),
+        where('userId', '==', currentUser.uid),
+        orderBy('createdAt', 'desc')
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const projects = {
+        current: [],
+        finished: [],
+        maintenance: []
+      };
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        projects[data.status].push({ id: doc.id, ...data });
+      });
+
+      renderProjects(projects);
+      
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('projectsContainer').style.display = 'block';
+    } catch (error) {
+      console.error('Error loading projects:', error);
+      alert('Error loading projects. Check console for details.');
+    }
+  }
+
+  // Render projects
+  function renderProjects(projects) {
+    document.getElementById('currentCount').textContent = projects.current.length;
+    document.getElementById('finishedCount').textContent = projects.finished.length;
+    document.getElementById('maintenanceCount').textContent = projects.maintenance.length;
+
+    renderProjectSection('currentProjects', projects.current);
+    renderProjectSection('finishedProjects', projects.finished);
+    renderProjectSection('maintenanceProjects', projects.maintenance);
+  }
+
+  function renderProjectSection(containerId, projects) {
+    const container = document.getElementById(containerId);
+    
+    if (projects.length === 0) {
+      container.innerHTML = '<div class="empty-state"><p>No projects yet</p></div>';
+      return;
+    }
+
+    container.innerHTML = projects.map(project => `
+      <div class="project-card">
+        <div class="project-header">
+          <h3 class="project-title">${escapeHtml(project.title)}</h3>
+          <div class="project-actions">
+            <button class="icon-btn" onclick="editProject('${project.id}')" title="Edit">✏️</button>
+            <button class="icon-btn delete" onclick="deleteProject('${project.id}')" title="Delete">🗑️</button>
+          </div>
+        </div>
+        ${project.description ? `<p class="project-description">${escapeHtml(project.description)}</p>` : ''}
+        ${(project.githubUrl || project.liveUrl) ? `
+          <div class="project-links">
+            ${project.githubUrl ? `<a href="${escapeHtml(project.githubUrl)}" target="_blank" class="project-link">GitHub</a>` : ''}
+            ${project.liveUrl ? `<a href="${escapeHtml(project.liveUrl)}" target="_blank" class="project-link">Live Demo</a>` : ''}
+          </div>
+        ` : ''}
+        ${project.tags && project.tags.length > 0 ? `
+          <div class="project-tags">
+            ${project.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `).join('');
+  }
+
+  // Modal functions
+  window.openModal = function(status = 'current') {
+    editingProjectId = null;
+    document.getElementById('modalTitle').textContent = 'Add Project';
+    document.getElementById('submitBtn').textContent = 'Add Project';
+    document.getElementById('projectForm').reset();
+    document.getElementById('projectStatus').value = status;
+    document.getElementById('projectModal').classList.add('show');
+  };
+
+  window.closeModal = function() {
+    document.getElementById('projectModal').classList.remove('show');
+    editingProjectId = null;
+  };
+
+  // Edit project
+  window.editProject = async function(projectId) {
+    const q = query(collection(db, 'projects'), where('userId', '==', currentUser.uid));
+    const querySnapshot = await getDocs(q);
+    
+    let project = null;
+    querySnapshot.forEach((doc) => {
+      if (doc.id === projectId) {
+        project = { id: doc.id, ...doc.data() };
+      }
+    });
+
+    if (!project) return;
+
+    editingProjectId = projectId;
+    document.getElementById('modalTitle').textContent = 'Edit Project';
+    document.getElementById('submitBtn').textContent = 'Update Project';
+    document.getElementById('projectTitle').value = project.title;
+    document.getElementById('projectDescription').value = project.description || '';
+    document.getElementById('projectStatus').value = project.status;
+    document.getElementById('projectGithub').value = project.githubUrl || '';
+    document.getElementById('projectLive').value = project.liveUrl || '';
+    document.getElementById('projectTags').value = project.tags ? project.tags.join(', ') : '';
+    document.getElementById('projectModal').classList.add('show');
+  };
+
+  // Delete project
+  window.deleteProject = async function(projectId) {
+    if (!confirm('Are you sure you want to delete this project?')) return;
+
+    try {
+      await deleteDoc(doc(db, 'projects', projectId));
+      loadProjects();
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      alert('Error deleting project');
+    }
+  };
+
+  // Form submit
+  document.getElementById('projectForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const projectData = {
+      title: document.getElementById('projectTitle').value,
+      description: document.getElementById('projectDescription').value,
+      status: document.getElementById('projectStatus').value,
+      githubUrl: document.getElementById('projectGithub').value,
+      liveUrl: document.getElementById('projectLive').value,
+      tags: document.getElementById('projectTags').value
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag),
+      userId: currentUser.uid,
+      updatedAt: new Date()
+    };
+
+    try {
+      if (editingProjectId) {
+        await updateDoc(doc(db, 'projects', editingProjectId), projectData);
+      } else {
+        projectData.createdAt = new Date();
+        await addDoc(collection(db, 'projects'), projectData);
+      }
+      
+      closeModal();
+      loadProjects();
+    } catch (error) {
+      console.error('Error saving project:', error);
+      alert('Error saving project: ' + error.message);
+    }
+  });
+
+  // Utility function
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Close modal on outside click
+  document.getElementById('projectModal').addEventListener('click', (e) => {
+    if (e.target.id === 'projectModal') {
+      closeModal();
+    }
+  });
+</script>
+
+</body>
+</html>

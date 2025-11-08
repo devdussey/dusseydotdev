@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DevDussey | dussey.dev</title>
+
+<style>
+  html, body {
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    font-family: Consolas, monospace;
+    background: url("Background.png") center/cover no-repeat fixed;
+    color:#ffffff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-shadow:0 0 10px rgba(255,255,255,0.25);
+  }
+
+  .wrapper {
+    text-align:center;
+    backdrop-filter: blur(4px);
+  }
+
+  .cmd {
+    font-size: clamp(26px, 6vw, 60px);
+    white-space: pre;
+  }
+
+  .cursor {
+    animation: blink 0.85s steps(2, start) infinite;
+  }
+
+  @keyframes blink {
+    to { visibility:hidden; }
+  }
+
+  .sub {
+    margin-top:18px;
+    font-size: clamp(16px, 3vw, 28px);
+    opacity:0.85;
+  }
+
+  footer {
+    position:fixed;
+    bottom:15px;
+    width:100%;
+    text-align:center;
+    font-size:14px;
+    opacity:0.55;
+  }
+
+  /* glow orb effect */
+  .orbGlow {
+    position:fixed;
+    top:0;left:0;right:0;bottom:0;
+    pointer-events:none;
+    background:
+      radial-gradient(circle at 50% 55%, rgba(0,140,255,0.25), transparent 70%);
+    mix-blend-mode:screen;
+    animation: orbPulse 5s ease-in-out infinite;
+  }
+
+  @keyframes orbPulse {
+    0% { opacity:0.20; }
+    50% { opacity:0.45; }
+    100% { opacity:0.20; }
+  }
+
+  /* Hidden workspace link - only accessible via direct URL typing or knowing about it */
+  .workspace-link {
+    position: fixed;
+    bottom: 50px;
+    right: 20px;
+    font-size: 11px;
+    opacity: 0.15;
+    transition: opacity 0.3s;
+    text-decoration: none;
+    color: #fff;
+  }
+
+  .workspace-link:hover {
+    opacity: 0.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="orbGlow"></div>
+
+<div class="wrapper">
+  <div class="cmd">C:\DevDussey&gt;<span class="cursor">_</span></div>
+  <div class="sub">Design &nbsp;|&nbsp; Development &nbsp;|&nbsp; Delivery</div>
+</div>
+
+<a href="login.html" class="workspace-link">workspace</a>
+
+<footer>
+  © <span id="yr"></span> DevDussey
+</footer>
+
+<script>
+document.getElementById("yr").textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>

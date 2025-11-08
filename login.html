@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Workspace Login | DevDussey</title>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .login-container {
+    background: rgba(17, 24, 39, 0.95);
+    border-radius: 20px;
+    padding: 50px 40px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .logo {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .logo h1 {
+    color: #fff;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+
+  .logo p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  input {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 15px;
+    transition: all 0.3s;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-top: 10px;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn:active {
+    transform: translateY(0);
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    display: none;
+  }
+
+  .error.show {
+    display: block;
+  }
+
+  .back-link {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .back-link a {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s;
+  }
+
+  .back-link a:hover {
+    color: #fff;
+  }
+</style>
+</head>
+<body>
+
+<div class="login-container">
+  <div class="logo">
+    <h1>Workspace</h1>
+    <p>Sign in to continue</p>
+  </div>
+
+  <div class="error" id="error"></div>
+
+  <form id="loginForm">
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="your@email.com" required autocomplete="email">
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+    </div>
+
+    <button type="submit" class="btn" id="loginBtn">Sign In</button>
+  </form>
+
+  <div class="back-link">
+    <a href="index.html">← Back to home</a>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB-7IHqfyTn4OuFx36LNl5sAuVS-UjZF6g",
+    authDomain: "devdusseyworkspace.firebaseapp.com",
+    projectId: "devdusseyworkspace",
+    storageBucket: "devdusseyworkspace.firebasestorage.app",
+    messagingSenderId: "942897542939",
+    appId: "1:942897542939:web:edd79e871ad62d80c345be"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  const form = document.getElementById('loginForm');
+  const errorDiv = document.getElementById('error');
+  const loginBtn = document.getElementById('loginBtn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    errorDiv.classList.remove('show');
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Signing in...';
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      window.location.href = 'workspace.html';
+    } catch (error) {
+      console.error('Login error:', error);
+      errorDiv.textContent = getErrorMessage(error.code);
+      errorDiv.classList.add('show');
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Sign In';
+    }
+  });
+
+  function getErrorMessage(code) {
+    switch (code) {
+      case 'auth/invalid-email':
+        return 'Invalid email address.';
+      case 'auth/user-disabled':
+        return 'This account has been disabled.';
+      case 'auth/user-not-found':
+        return 'No account found with this email.';
+      case 'auth/wrong-password':
+        return 'Incorrect password.';
+      case 'auth/invalid-credential':
+        return 'Invalid email or password.';
+      default:
+        return 'An error occurred. Please try again.';
+    }
+  }
+</script>
+
+</body>
+</html>
