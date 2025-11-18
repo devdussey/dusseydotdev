@@ -7,8 +7,7 @@
     "build": "echo 'Static site - no build needed'"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.38.0",
-    "pg": "^8.11.3"
+    "@supabase/supabase-js": "^2.38.0"
   },
   "devDependencies": {},
   "keywords": [
