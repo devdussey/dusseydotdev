@@ -53,6 +53,13 @@ npm run build
 - This runs `robo build` and packages both the client Activity and server APIs.
 - When you deploy, Robo.js ships the build to the Discord Activity host and keeps the Discord Proxy (`DiscordProxy.Vite()`, see `config/vite.mjs`) live for `/api/token`.
 
+## Self-hosting
+
+- Ensure your server runs Node.js v20 or newer (per the Robo.js self-hosting guide).
+- Install dependencies with `npm install`, build with `npm run build`, and run `npm run start` to keep the `robo` process alive.
+- Point your own reverse proxy or process manager at the Robo server, and make sure Discord’s Activity URL mapping reaches the same `/api/token` proxy route.
+- Refer to [https://robojs.dev/hosting/self-host](https://robojs.dev/hosting/self-host) for the complete workflow and troubleshooting tips.
+
 ## Directory overview
 
 - `/src/app` – React UI with the board, scoreboard, lobby panels, and gem actions.
