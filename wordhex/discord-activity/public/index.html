@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wordhex – Discord Activity</title>
+    <link rel="stylesheet" href="./styles/activity.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Wordhex</h1>
+      <p class="subtitle">SpellCast-inspired multiplayer built for Discord Activities.</p>
+    </header>
+
+    <main>
+      <aside class="panel" aria-label="players and timer">
+        <h2>Players</h2>
+        <ul id="player-list"></ul>
+
+        <div id="timer">
+          <div>
+            <span class="label">Round Timer</span>
+            <div class="time-display" id="time-remaining">30</div>
+          </div>
+          <button id="start-timer">Start</button>
+        </div>
+
+        <div class="status">
+          <div class="label">Discord SDK</div>
+          <div id="status">Loading Discord SDK…</div>
+        </div>
+      </aside>
+
+      <section class="panel" aria-label="game board">
+        <h2>Active Board</h2>
+        <div id="board" aria-live="polite"></div>
+
+        <form id="word-form" autocomplete="off">
+          <label for="word-input">Submit a word</label>
+          <input id="word-input" name="word" type="text" placeholder="Type your word" required minlength="2" />
+          <button type="submit">Submit Word</button>
+        </form>
+
+        <div id="word-history"></div>
+      </section>
+
+      <aside class="panel" aria-label="gem abilities">
+        <h2>Gem Abilities</h2>
+        <div id="gems">
+          <span>Gem Reserve</span>
+          <div id="gem-count">3</div>
+        </div>
+
+        <div class="gem-actions">
+          <button data-action="shuffle">
+            Shuffle Board
+            <span>Cost: 1</span>
+          </button>
+          <button data-action="swap">
+            Swap Tiles
+            <span>Cost: 3</span>
+          </button>
+          <button data-action="hint">
+            Reveal Hint
+            <span>Cost: 4</span>
+          </button>
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      <p>Wordhex © 2025 | Built for Discord Activities</p>
+    </footer>
+
+    <script src="https://discord.com/sdk/embedded.js"></script>
+    <script type="module" src="./scripts/activity.js"></script>
+  </body>
+</html>
