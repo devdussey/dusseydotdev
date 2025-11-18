@@ -253,6 +253,17 @@
       margin-left: 0.35rem;
     }
 
+    .tag.host {
+      background: rgba(140, 113, 255, 0.2);
+      color: var(--accent);
+    }
+
+    #scoreboard li.empty {
+      justify-content: center;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
     .lobby-status {
       margin-top: 1rem;
       font-size: 0.9rem;
@@ -501,7 +512,7 @@
     <div class="lobby-grid">
       <div class="lobby-channel">
         <span class="label">Connected Voice Channel</span>
-        <div class="channel-name">#spellcast-practice</div>
+        <div class="channel-name" id="lobby-channel-name">#spellcast-practice</div>
         <p class="subtle">Match audio + Discord reactions sync here.</p>
       </div>
       <div class="lobby-pin">
@@ -606,6 +617,8 @@
 
   <script src="https://discord.com/sdk/embedded.js"></script>
   <script type="module">
+    import { lobbyService, ensurePlayerProfile, updatePlayerProfile, LOBBY_DEFAULTS } from "./scripts/lobby-service.js";
+
     const status = document.getElementById("status");
     const boardEl = document.getElementById("board");
     const wordForm = document.getElementById("word-form");
@@ -621,6 +634,7 @@
     const readyCountEl = document.getElementById("ready-count");
     const lobbyCodeEl = document.getElementById("lobby-code");
     const lobbyHostEl = document.getElementById("lobby-host");
+    const lobbyChannelEl = document.getElementById("lobby-channel-name");
     const shareLobbyBtn = document.getElementById("share-lobby");
     const startMatchBtn = document.getElementById("start-match");
     const matchSettingsEl = document.getElementById("match-settings");
@@ -647,29 +661,37 @@
     let timerInterval = null;
     let timeRemaining = 30;
 
-    const lobbyDetails = {
-      pin: "8421",
-      hostId: "me",
-      channel: "#spellcast-practice",
-      mode: "Competitive Draft",
-      rounds: 5,
-      winCondition: "Highest score after 5 rounds",
-      dictionary: "Tournament (NA)"
+    let playerProfile = ensurePlayerProfile();
+    let activeLobby = null;
+    let unsubscribeLobby = null;
+
+    const getCachedLobbyCode = () => {
+      try {
+        return sessionStorage.getItem("wordhex:lastLobbyCode");
+      } catch (error) {
+        console.warn("Unable to read cached lobby code", error);
+        return null;
+      }
     };
 
-    const matchSettings = [
-      { label: "Game Mode", value: lobbyDetails.mode },
-      { label: "Rounds", value: `${lobbyDetails.rounds} (30s each)` },
-      { label: "Win Condition", value: lobbyDetails.winCondition },
-      { label: "Dictionary", value: lobbyDetails.dictionary }
-    ];
+    const cacheLobbyCode = (code) => {
+      try {
+        sessionStorage.setItem("wordhex:lastLobbyCode", code);
+      } catch (error) {
+        console.warn("Unable to cache lobby code", error);
+      }
+    };
 
-    const samplePlayers = [
-      { id: "me", name: "You", score: 0, isActive: true, ready: false },
-      { id: "1", name: "Nova", score: 28, ready: true },
-      { id: "2", name: "Atlas", score: 21, ready: true },
-      { id: "3", name: "Mira", score: 17, ready: false }
-    ];
+    const params = new URLSearchParams(window.location.search);
+    let lobbyCode = params.get("code") || getCachedLobbyCode() || lobbyService.generateLobbyCode();
+
+    if (!params.get("code")) {
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set("code", lobbyCode);
+      window.history.replaceState({}, "", nextUrl);
+    }
+
+    cacheLobbyCode(lobbyCode);
 
     const activityFeed = [
       { player: "Nova", detail: "found <strong>QUARTZ</strong>", value: "+42" },
@@ -684,27 +706,51 @@
 
     const renderPlayers = () => {
       playerList.innerHTML = "";
-      samplePlayers
-        .sort((a, b) => b.score - a.score)
-        .forEach((player, index) => {
-          const li = document.createElement("li");
-          if (player.isActive) li.classList.add("active");
-          li.dataset.ready = player.ready;
-          const readyLabel = player.ready ? "Ready" : "Waiting";
-          li.innerHTML = `
-            <div>
-              <span>${index + 1}. ${player.name}</span>
-              <span class="tag">${readyLabel}</span>
-            </div>
-            <span>${player.score}</span>
-          `;
-          playerList.appendChild(li);
-        });
+      const players = activeLobby?.players ? [...activeLobby.players].sort((a, b) => (b.score || 0) - (a.score || 0)) : [];
+      if (!players.length) {
+        const empty = document.createElement("li");
+        empty.className = "empty";
+        empty.textContent = "Share your lobby code to invite players.";
+        playerList.appendChild(empty);
+        return;
+      }
+
+      players.forEach((player, index) => {
+        const li = document.createElement("li");
+        li.dataset.ready = player.ready;
+        if (player.id === playerProfile.id) {
+          li.classList.add("active");
+        }
+        const readyLabel = player.ready ? "Ready" : "Waiting";
+        const isHost = player.id === activeLobby?.hostId;
+        const hostTag = isHost ? '<span class="tag host">Host</span>' : "";
+        li.innerHTML = `
+          <div>
+            <span>${index + 1}. ${player.name}</span>
+            ${hostTag}
+            <span class="tag">${readyLabel}</span>
+          </div>
+          <span>${player.score ?? 0}</span>
+        `;
+        playerList.appendChild(li);
+      });
+    };
+
+    const buildMatchSettings = () => {
+      const settings = activeLobby?.settings || {};
+      const rounds = settings.rounds ?? LOBBY_DEFAULTS.rounds;
+      const roundDuration = settings.roundDuration ?? settings.roundDurationSeconds ?? LOBBY_DEFAULTS.roundDuration;
+      return [
+        { label: "Game Mode", value: settings.mode ?? LOBBY_DEFAULTS.mode },
+        { label: "Rounds", value: `${rounds} (${roundDuration}s each)` },
+        { label: "Win Condition", value: settings.winCondition ?? LOBBY_DEFAULTS.winCondition },
+        { label: "Dictionary", value: settings.dictionary ?? LOBBY_DEFAULTS.dictionary }
+      ];
     };
 
     const renderMatchSettings = () => {
       matchSettingsEl.innerHTML = "";
-      matchSettings.forEach((setting) => {
+      buildMatchSettings().forEach((setting) => {
         const div = document.createElement("div");
         div.className = "setting-item";
         div.innerHTML = `
@@ -715,17 +761,71 @@
       });
     };
 
+    const applyLobbyState = () => {
+      renderPlayers();
+      renderMatchSettings();
+      updateLobbyMeta();
+    };
+
+    const initLobbySync = () => {
+      lobbyService.ensureLobby(lobbyCode, {
+        hostId: playerProfile.id,
+        hostName: playerProfile.name
+      });
+      lobbyService.joinLobby(lobbyCode, {
+        id: playerProfile.id,
+        name: playerProfile.name,
+        score: 0,
+        ready: false,
+        isActive: true
+      });
+      if (typeof unsubscribeLobby === "function") {
+        unsubscribeLobby();
+      }
+      unsubscribeLobby = lobbyService.subscribeToLobby(lobbyCode, (lobby) => {
+        activeLobby = lobby;
+        cacheLobbyCode(lobby.code);
+        applyLobbyState();
+      });
+      activeLobby = lobbyService.getLobby(lobbyCode);
+      applyLobbyState();
+    };
+
     const updateLobbyMeta = () => {
-      const readyCount = samplePlayers.filter((player) => player.ready).length;
-      readyCountEl.textContent = `${readyCount} / ${samplePlayers.length}`;
-      lobbyStatus.textContent =
-        readyCount === samplePlayers.length
-          ? "All players ready—host can start the match."
-          : `${readyCount} players ready. Waiting for everyone to lock in.`;
-      startMatchBtn.disabled = readyCount !== samplePlayers.length || lobbyDetails.hostId !== "me";
-      readyButton.textContent = samplePlayers.find((player) => player.id === "me")?.ready
-        ? "Cancel Ready"
-        : "Ready Up";
+      if (!activeLobby) {
+        readyCountEl.textContent = "0 / 0";
+        lobbyStatus.textContent = "Setting up lobby…";
+        readyButton.disabled = true;
+        startMatchBtn.disabled = true;
+        return;
+      }
+
+      const players = activeLobby.players || [];
+      const readyCount = players.filter((player) => player.ready).length;
+      readyCountEl.textContent = `${readyCount} / ${players.length}`;
+      const isHost = activeLobby.hostId === playerProfile.id;
+
+      let statusMessage = "";
+      if (!players.length) {
+        statusMessage = "Waiting for players to join this lobby.";
+      } else if (activeLobby.status === "active") {
+        statusMessage = "Match in progress.";
+      } else if (readyCount === players.length) {
+        statusMessage = "All players ready—host can start the match.";
+      } else {
+        statusMessage = `${readyCount} of ${players.length} players ready.`;
+      }
+      lobbyStatus.textContent = statusMessage;
+
+      startMatchBtn.disabled =
+        !isHost || activeLobby.status === "active" || players.length === 0 || readyCount !== players.length;
+      readyButton.disabled = activeLobby.status === "active";
+
+      const currentPlayer = players.find((player) => player.id === playerProfile.id);
+      readyButton.textContent = currentPlayer?.ready ? "Cancel Ready" : "Ready Up";
+      lobbyHostEl.textContent = activeLobby.hostName || "Host";
+      lobbyChannelEl.textContent = activeLobby.channel || LOBBY_DEFAULTS.channel;
+      lobbyCodeEl.textContent = activeLobby.code;
     };
 
     const renderFeed = () => {
@@ -873,22 +973,34 @@
     });
 
     readyButton.addEventListener("click", () => {
-      const player = samplePlayers.find((p) => p.id === "me");
-      if (!player) return;
-      player.ready = !player.ready;
-      renderPlayers();
-      updateLobbyMeta();
+      if (!activeLobby || readyButton.disabled) return;
+      lobbyService.togglePlayerReady(activeLobby.code, playerProfile.id);
     });
 
     startMatchBtn.addEventListener("click", () => {
-      if (startMatchBtn.disabled) return;
+      if (!activeLobby) return;
+      const players = activeLobby.players || [];
+      if (activeLobby.hostId !== playerProfile.id) {
+        flashStatus("Only the host can start the match.", "error");
+        status.style.color = "var(--danger)";
+        return;
+      }
+      if (!players.length || players.some((player) => !player.ready)) {
+        flashStatus("All players need to be ready before starting.", "error");
+        status.style.color = "var(--danger)";
+        return;
+      }
+      lobbyService.setLobbyStatus(activeLobby.code, "active");
       flashStatus("Match starting in Discord lobby", "success");
       status.style.color = "var(--success)";
     });
 
     shareLobbyBtn.addEventListener("click", async () => {
+      if (!activeLobby) return;
       try {
-        await navigator.clipboard.writeText(`Join my Wordhex lobby: ${lobbyDetails.pin}`);
+        const invite = new URL(window.location.href);
+        invite.searchParams.set("code", activeLobby.code);
+        await navigator.clipboard.writeText(`Join my Wordhex lobby (${activeLobby.code}): ${invite.toString()}`);
         flashStatus("Invite code copied", "success");
       } catch (error) {
         console.error(error);
@@ -980,10 +1092,10 @@
       }
 
       addWordToHistory(submittedWord, result.score);
-      const player = samplePlayers.find((p) => p.id === "me");
-      if (player) player.score += result.score;
+      if (activeLobby) {
+        lobbyService.incrementPlayerScore(activeLobby.code, playerProfile.id, result.score);
+      }
       if (result.gems > 0) updateGemCount(gemCount + result.gems);
-      renderPlayers();
       flashStatus(`Word scored ${result.score} points`, "success");
       status.style.color = "var(--success)";
       wordForm.reset();
@@ -1026,9 +1138,10 @@
       try {
         await discordSdk.ready;
         const auth = await discordSdk.commands.authenticate();
-        const player = samplePlayers.find((p) => p.id === "me");
-        if (player) player.name = auth.user.username;
-        renderPlayers();
+        playerProfile = updatePlayerProfile({ name: auth.user.username });
+        if (activeLobby) {
+          lobbyService.updatePlayerName(activeLobby.code, playerProfile.id, playerProfile.name);
+        }
         flashStatus(`Authenticated as ${auth.user.username}`, "success");
         status.style.color = "var(--success)";
       } catch (error) {
@@ -1042,14 +1155,11 @@
       board = generateBoard();
       renderBoard();
       updateGemCount(gemCount);
-      renderPlayers();
-      renderMatchSettings();
       renderFeed();
       renderChat();
-      lobbyCodeEl.textContent = lobbyDetails.pin;
-      lobbyHostEl.textContent = "You";
       updateLobbyMeta();
       resetTimer();
+      initLobbySync();
       initDiscord();
     };
 
