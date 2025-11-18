@@ -19,23 +19,46 @@
   <main class="editor-container">
 
     <aside class="toolbar">
-      <input type="file" id="fileInput" accept="image/*" />
+      <section class="panel">
+        <h2>Image</h2>
+        <label class="file-upload">
+          <input type="file" id="fileInput" accept="image/*" />
+          <span>Upload Image</span>
+        </label>
+        <div class="button-group">
+          <button id="cropBtn">Crop</button>
+          <button id="resizeBtn">Resize</button>
+          <button id="rotateBtn">Rotate</button>
+        </div>
+      </section>
 
-      <button id="cropBtn">Crop</button>
-      <button id="resizeBtn">Resize</button>
-      <button id="rotateBtn">Rotate</button>
+      <section class="panel">
+        <h2>Adjustments</h2>
+        <label>
+          Brightness
+          <input type="range" id="brightness" min="0" max="200" value="100">
+        </label>
 
-      <label>
-        Brightness
-        <input type="range" id="brightness" min="0" max="200" value="100">
-      </label>
+        <label>
+          Contrast
+          <input type="range" id="contrast" min="0" max="200" value="100">
+        </label>
+      </section>
 
-      <label>
-        Contrast
-        <input type="range" id="contrast" min="0" max="200" value="100">
-      </label>
+      <section class="panel">
+        <h2>Background</h2>
+        <button id="removeBgBtn">Remove Background</button>
+        <label>
+          Sensitivity
+          <input type="range" id="bgThreshold" min="10" max="150" value="55">
+        </label>
+        <p class="hint">Uses the corner colors of your image to detect the background.</p>
+      </section>
 
-      <button id="downloadBtn">Download</button>
+      <section class="panel">
+        <button id="downloadBtn" class="primary">Download</button>
+        <p class="status" id="statusMessage">Upload an image to get started.</p>
+      </section>
     </aside>
 
     <section class="canvas-area">
