@@ -3,23 +3,31 @@
 
 const { createClient } = require('@supabase/supabase-js');
 
-// Initialize Supabase with service role key (has full database access)
+// Initialize Supabase with service role key
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('Missing Supabase env vars');
+}
+
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // Discord OAuth credentials
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || 'https://dussey.dev/.netlify/functions/discord-auth';
+const REDIRECT_URI = 'https://dussey.dev/.netlify/functions/discord-auth';
 
 exports.handler = async (event) => {
   try {
+    console.log('OAuth callback received');
+
     // Get authorization code from Discord
     const { code, state, error } = event.queryStringParameters || {};
 
     // Handle Discord errors
     if (error) {
+      console.log('Discord error:', error);
       return {
         statusCode: 302,
         headers: {
@@ -29,11 +37,16 @@ exports.handler = async (event) => {
     }
 
     if (!code) {
+      console.error('Missing authorization code');
       return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Missing authorization code' })
+        statusCode: 302,
+        headers: {
+          Location: `/wordhex/login.html?error=no_code`
+        }
       };
     }
+
+    console.log('Exchanging code for token...');
 
     // Step 1: Exchange code for access token
     const tokenResponse = await fetch('https://discord.com/api/v10/oauth2/token', {
@@ -47,7 +60,7 @@ exports.handler = async (event) => {
         grant_type: 'authorization_code',
         code: code,
         redirect_uri: REDIRECT_URI
-      })
+      }).toString()
     });
 
     if (!tokenResponse.ok) {
@@ -56,12 +69,15 @@ exports.handler = async (event) => {
       return {
         statusCode: 302,
         headers: {
-          Location: `/wordhex/login.html?error=token_exchange_failed`
+          Location: `/wordhex/login.html?error=token_failed`
         }
       };
     }
 
-    const { access_token } = await tokenResponse.json();
+    const tokenData = await tokenResponse.json();
+    const access_token = tokenData.access_token;
+
+    console.log('Got access token, fetching user...');
 
     // Step 2: Get user data from Discord
     const userResponse = await fetch('https://discord.com/api/v10/users/@me', {
@@ -71,99 +87,99 @@ exports.handler = async (event) => {
     });
 
     if (!userResponse.ok) {
-      console.error('Failed to get Discord user');
+      console.error('Failed to get Discord user:', userResponse.status);
       return {
         statusCode: 302,
         headers: {
-          Location: `/wordhex/login.html?error=user_fetch_failed`
+          Location: `/wordhex/login.html?error=user_failed`
         }
       };
     }
 
     const discordUser = await userResponse.json();
+    console.log('Got Discord user:', discordUser.id);
 
     // Step 3: Store/update user in Supabase
+    const avatarUrl = discordUser.avatar
+      ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
+      : null;
+
+    console.log('Checking if user exists...');
+
+    const { data: existingUser, error: selectError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('discord_id', discordUser.id)
+      .maybeSingle();
+
     let userId;
 
-    try {
-      const avatarUrl = discordUser.avatar
-        ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
-        : null;
-
-      // Check if user exists
-      const { data: existingUser, error: selectError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('discord_id', discordUser.id)
-        .maybeSingle();
-
-      if (existingUser) {
-        // Update existing user
-        const { data, error } = await supabase
-          .from('users')
-          .update({
-            discord_username: discordUser.username,
-            avatar_url: avatarUrl,
-            email: discordUser.email,
-            updated_at: new Date().toISOString()
-          })
-          .eq('discord_id', discordUser.id)
-          .select('id')
-          .single();
-
-        if (error) throw error;
-        userId = data.id;
-      } else {
-        // Create new user
-        const { data, error } = await supabase
-          .from('users')
-          .insert([{
-            discord_id: discordUser.id,
-            discord_username: discordUser.username,
-            avatar_url: avatarUrl,
-            email: discordUser.email
-          }])
-          .select('id')
-          .single();
-
-        if (error) throw error;
-        userId = data.id;
-      }
-    } catch (dbError) {
-      console.error('Database operation error:', dbError.message);
-      console.error('Full error:', dbError);
-      return {
-        statusCode: 302,
-        headers: {
-          Location: `/wordhex/login.html?error=database_error`
-        }
-      };
+    if (selectError && selectError.code !== 'PGRST116') {
+      throw selectError;
     }
 
-    // Step 4: Create session token (JWT)
+    if (existingUser) {
+      console.log('Updating existing user...');
+      const { data, error } = await supabase
+        .from('users')
+        .update({
+          discord_username: discordUser.username,
+          avatar_url: avatarUrl,
+          email: discordUser.email,
+          updated_at: new Date().toISOString()
+        })
+        .eq('discord_id', discordUser.id)
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      userId = data.id;
+      console.log('User updated');
+    } else {
+      console.log('Creating new user...');
+      const { data, error } = await supabase
+        .from('users')
+        .insert([{
+          discord_id: discordUser.id,
+          discord_username: discordUser.username,
+          avatar_url: avatarUrl,
+          email: discordUser.email
+        }])
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      userId = data.id;
+      console.log('User created');
+    }
+
+    // Step 4: Create session token
     const sessionToken = Buffer.from(JSON.stringify({
       userId: userId,
       discordId: discordUser.id,
       username: discordUser.username,
       avatar: discordUser.avatar,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60) // 7 days
+      exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60)
     })).toString('base64');
+
+    console.log('Login successful!');
 
     // Step 5: Redirect to game with session
     return {
       statusCode: 302,
       headers: {
-        Location: `/wordhex/?session=${sessionToken}&user=${discordUser.username}`
+        Location: `/wordhex/?session=${sessionToken}&user=${encodeURIComponent(discordUser.username)}`
       }
     };
 
   } catch (error) {
-    console.error('OAuth handler error:', error);
+    console.error('OAuth handler error:', error.message);
+    console.error('Full error:', error);
     return {
       statusCode: 302,
       headers: {
-        Location: `/wordhex/login.html?error=internal_error`
+        Location: `/wordhex/login.html?error=server_error`
       }
     };
   }
