@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workspace Editor</title>
+  <link rel="stylesheet" href="editor.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <h1>Workspace Editor</h1>
+  </header>
+
+  <main class="editor-container">
+
+    <aside class="toolbar">
+      <input type="file" id="fileInput" accept="image/*" />
+
+      <button id="cropBtn">Crop</button>
+      <button id="resizeBtn">Resize</button>
+      <button id="rotateBtn">Rotate</button>
+
+      <label>
+        Brightness
+        <input type="range" id="brightness" min="0" max="200" value="100">
+      </label>
+
+      <label>
+        Contrast
+        <input type="range" id="contrast" min="0" max="200" value="100">
+      </label>
+
+      <button id="downloadBtn">Download</button>
+    </aside>
+
+    <section class="canvas-area">
+      <canvas id="editorCanvas"></canvas>
+    </section>
+
+  </main>
+
+  <script src="editor.js"></script>
+</body>
+</html>

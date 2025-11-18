@@ -1,0 +1,65 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #f7f7f7;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  background: #111;
+  color: #fff;
+  padding: 12px 20px;
+  font-size: 20px;
+}
+
+.editor-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.toolbar {
+  width: 240px;
+  background: #fff;
+  border-right: 1px solid #ddd;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.toolbar input[type="file"] {
+  padding: 6px 0;
+}
+
+.toolbar button {
+  padding: 8px;
+  border: none;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.toolbar button:hover {
+  background: #444;
+}
+
+.canvas-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eaeaea;
+  position: relative;
+}
+
+#editorCanvas {
+  max-width: 90%;
+  max-height: 90%;
+  background: #fff;
+  border: 1px solid #ccc;
+}
