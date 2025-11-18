@@ -82,64 +82,73 @@ exports.handler = async (event) => {
 
     const discordUser = await userResponse.json();
 
-    // Step 3: Store/update user in Supabase
-    const { data: existingUser, error: selectError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('discord_id', discordUser.id)
-      .single();
+    // Step 3: Store/update user in Supabase using direct SQL (service role bypasses schema restrictions)
+    const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
 
+    // Use RPC to insert/update user (works with service role)
     let userId;
 
-    if (existingUser) {
-      // Update existing user
-      const { data, error } = await supabase
+    try {
+      // Try to find existing user first
+      const { data: existingUser } = await supabaseAdmin
         .from('users')
-        .update({
-          discord_username: discordUser.username,
-          avatar_url: discordUser.avatar ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png` : null,
-          email: discordUser.email,
-          updated_at: new Date().toISOString()
-        })
+        .select('id')
         .eq('discord_id', discordUser.id)
-        .select('id')
-        .single();
+        .maybeSingle();
 
-      if (error) {
-        console.error('Supabase update error:', error);
-        return {
-          statusCode: 302,
-          headers: {
-            Location: `/wordhex/login.html?error=database_error`
-          }
-        };
+      if (existingUser) {
+        // Update existing user
+        const { data, error } = await supabaseAdmin
+          .from('users')
+          .update({
+            discord_username: discordUser.username,
+            avatar_url: discordUser.avatar ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png` : null,
+            email: discordUser.email,
+            updated_at: new Date().toISOString()
+          })
+          .eq('discord_id', discordUser.id)
+          .select('id')
+          .single();
+
+        if (error) {
+          console.error('Supabase update error:', error);
+          throw error;
+        }
+
+        userId = data.id;
+      } else {
+        // Create new user
+        const { data, error } = await supabaseAdmin
+          .from('users')
+          .insert([{
+            discord_id: discordUser.id,
+            discord_username: discordUser.username,
+            avatar_url: discordUser.avatar ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png` : null,
+            email: discordUser.email
+          }])
+          .select('id')
+          .single();
+
+        if (error) {
+          console.error('Supabase insert error:', error);
+          throw error;
+        }
+
+        userId = data.id;
       }
-
-      userId = data.id;
-    } else {
-      // Create new user
-      const { data, error } = await supabase
-        .from('users')
-        .insert([{
-          discord_id: discordUser.id,
-          discord_username: discordUser.username,
-          avatar_url: discordUser.avatar ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png` : null,
-          email: discordUser.email
-        }])
-        .select('id')
-        .single();
-
-      if (error) {
-        console.error('Supabase insert error:', error);
-        return {
-          statusCode: 302,
-          headers: {
-            Location: `/wordhex/login.html?error=database_error`
-          }
-        };
-      }
-
-      userId = data.id;
+    } catch (dbError) {
+      console.error('Database operation error:', dbError);
+      return {
+        statusCode: 302,
+        headers: {
+          Location: `/wordhex/login.html?error=database_error`
+        }
+      };
     }
 
     // Step 4: Create session token (JWT)
