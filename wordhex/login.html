@@ -267,8 +267,8 @@
   </div>
 
   <script>
-    const CLIENT_ID = import.meta.env.VITE_DISCORD_CLIENT_ID;
-    const REDIRECT_URI = import.meta.env.VITE_DISCORD_REDIRECT_URI || 'https://dussey.dev/.netlify/functions/discord-auth';
+    const CLIENT_ID = '1440392506553405580';
+    const REDIRECT_URI = 'https://dussey.dev/.netlify/functions/discord-auth';
 
     const discordLoginBtn = document.getElementById('discordLoginBtn');
     const errorDiv = document.getElementById('error');
@@ -279,20 +279,15 @@
       errorDiv.textContent = message;
       errorDiv.classList.add('show');
       loadingDiv.classList.remove('show');
-      loginBox.classList.remove('hidden');
+      loginBox.style.display = 'block';
     }
 
     function startLogin() {
-      if (!CLIENT_ID) {
-        showError('Discord Client ID not configured. Please check environment variables.');
-        return;
-      }
-
       loadingDiv.classList.add('show');
       loginBox.style.display = 'none';
 
-      const scopes = 'identify email';
-      const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent(scopes)}`;
+      const scopes = 'identify+email';
+      const discordAuthUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scopes}`;
 
       window.location.href = discordAuthUrl;
     }
