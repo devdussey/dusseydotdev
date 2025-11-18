@@ -143,6 +143,122 @@
       margin-top: 0.4rem;
     }
 
+    .info-sections {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+
+    .info-section {
+      background: rgba(20, 26, 44, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 18px;
+      padding: 1.75rem;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 20px 40px rgba(9, 11, 18, 0.45);
+    }
+
+    .info-section header,
+    .info-section h2 {
+      margin: 0 0 1rem;
+      font-size: 1.35rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .section-subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.25rem;
+      line-height: 1.6;
+    }
+
+    .rule-list,
+    .section-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .rule-list li,
+    .section-list li {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .points-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.95rem;
+    }
+
+    .points-table th,
+    .points-table td {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.6rem 0.75rem;
+      text-align: left;
+    }
+
+    .points-table th {
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .bonus-grid,
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1rem;
+      text-align: left;
+    }
+
+    .card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .cost-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(140, 113, 255, 0.2);
+      border: 1px solid rgba(140, 113, 255, 0.35);
+      margin-bottom: 0.35rem;
+    }
+
+    .cost-badge::before {
+      content: "\2726";
+      color: var(--success);
+    }
+
     .footer {
       margin-top: 3rem;
       font-size: 0.85rem;
@@ -222,6 +338,10 @@
         padding: 1.2rem 1.5rem;
         font-size: 1rem;
       }
+
+      .info-section {
+        padding: 1.25rem;
+      }
     }
   </style>
 </head>
@@ -263,6 +383,105 @@
 
     <div class="status-badge">
       ✓ Ready to Play
+    </div>
+
+    <div class="info-sections">
+      <section id="practice" class="info-section">
+        <h2>Practice & Modes</h2>
+        <p class="section-subtitle">
+          SpellCast supports quick solo drills or full multiplayer lobbies. Hop into Practice to
+          play against adaptive bots or launch a New Game to invite your Discord server. Every match
+          runs for five 30-second rounds and the highest total score wins.
+        </p>
+        <ul class="section-list">
+          <li><strong>Practice:</strong> Solo queue with adjustable bot strength and real gem payouts.</li>
+          <li><strong>New Game:</strong> Share a 4-digit lobby pin with up to 5 other players for a live round.</li>
+          <li><strong>Coming Soon:</strong> Ranked ladder that mirrors SpellCast matchmaking.</li>
+        </ul>
+      </section>
+
+      <section id="rules" class="info-section">
+        <h2>SpellCast Rules</h2>
+        <p class="section-subtitle">
+          WordHex mirrors the official SpellCast ruleset from the Discord Activities wiki so the skills
+          you build here transfer directly into the activity.
+        </p>
+        <ul class="rule-list">
+          <li>Play on a randomized 5×5 board and submit any word that uses adjacent tiles. Tiles reset after each word.</li>
+          <li>Rounds last 30 seconds; a full game is five rounds with up to six players competing asynchronously.</li>
+          <li>Words must be at least two letters. Six or more letters grant a +10 Spell Bonus.</li>
+          <li>Special tiles apply multipliers exactly like SpellCast: DL/TL for letters and DW/TW for whole words.</li>
+          <li>Gem tiles add to your reserve (starting at 3, capped at 10) and unlock the same spell controls.</li>
+        </ul>
+
+        <table class="points-table">
+          <thead>
+            <tr>
+              <th>Points</th>
+              <th>Letters</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>A, E, I, O</td></tr>
+            <tr><td>2</td><td>D, G, L, N, R, S, T, U</td></tr>
+            <tr><td>3</td><td>B, C, F, H, M, P, V, W, Y</td></tr>
+            <tr><td>4</td><td>K</td></tr>
+            <tr><td>5</td><td>J, X</td></tr>
+            <tr><td>8</td><td>Q, Z</td></tr>
+          </tbody>
+        </table>
+
+        <div class="bonus-grid">
+          <div class="card">
+            <h3>Letter Multipliers</h3>
+            <p>DL doubles the tile you land on while TL triples it. Stacks with word bonuses.</p>
+          </div>
+          <div class="card">
+            <h3>Word Multipliers</h3>
+            <p>DW and TW tiles boost the total score for that submission by ×2 or ×3 respectively.</p>
+          </div>
+          <div class="card">
+            <h3>Long Word Bonus</h3>
+            <p>Any six-plus letter word earns +10 points before multipliers, matching SpellCast.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="info-section">
+        <h2>Feature Controls</h2>
+        <p class="section-subtitle">
+          Bank gems from highlighted tiles to unleash the exact same SpellCast spell controls.</p>
+        <div class="feature-grid">
+          <div class="card">
+            <span class="cost-badge">1 Gem</span>
+            <h3>Shuffle Board</h3>
+            <p>Re-roll all 25 tiles to shake up the grid and expose new letter paths.</p>
+          </div>
+          <div class="card">
+            <span class="cost-badge">3 Gems</span>
+            <h3>Swap Tiles</h3>
+            <p>Select any two tiles and trade their positions to finish tricky words.</p>
+          </div>
+          <div class="card">
+            <span class="cost-badge">4 Gems</span>
+            <h3>Reveal Hint</h3>
+            <p>Highlights a high-value word on the board—perfect for clutch final seconds.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="leaderboard" class="info-section">
+        <h2>Leaderboard</h2>
+        <p class="section-subtitle">
+          Track cumulative SpellCast scores, gem efficiency, and longest word length. Season resets
+          follow Discord's global activity rotations so every climb feels meaningful.
+        </p>
+        <ul class="section-list">
+          <li><strong>Total Score:</strong> Sum of all round scores after multipliers.</li>
+          <li><strong>Gem Mastery:</strong> Bonus ranking for finishing with unused gems (1 point each).</li>
+          <li><strong>Streaks:</strong> Keep a win streak going to earn profile cosmetics.</li>
+        </ul>
+      </section>
     </div>
 
     <footer class="footer">
