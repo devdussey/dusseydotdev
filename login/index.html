@@ -172,64 +172,35 @@
   </div>
 </div>
 
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-  import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyB-7IHqfyTn4OuFx36LNl5sAuVS-UjZF6g",
-    authDomain: "devdusseyworkspace.firebaseapp.com",
-    projectId: "devdusseyworkspace",
-    storageBucket: "devdusseyworkspace.firebasestorage.app",
-    messagingSenderId: "942897542939",
-    appId: "1:942897542939:web:edd79e871ad62d80c345be"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
+<script>
   const form = document.getElementById('loginForm');
   const errorDiv = document.getElementById('error');
   const loginBtn = document.getElementById('loginBtn');
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', (e) => {
     e.preventDefault();
-    
+
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    
+
     errorDiv.classList.remove('show');
     loginBtn.disabled = true;
     loginBtn.textContent = 'Signing in...';
 
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      window.location.href = 'workspace.html';
-    } catch (error) {
-      console.error('Login error:', error);
-      errorDiv.textContent = getErrorMessage(error.code);
-      errorDiv.classList.add('show');
-      loginBtn.disabled = false;
-      loginBtn.textContent = 'Sign In';
-    }
+    // Simulate authentication delay
+    setTimeout(() => {
+      if (email && password && password.length >= 6) {
+        // Store session and redirect
+        sessionStorage.setItem('user', JSON.stringify({ email }));
+        window.location.href = '../workspace/';
+      } else {
+        errorDiv.textContent = password.length < 6 ? 'Password must be at least 6 characters.' : 'Invalid email or password.';
+        errorDiv.classList.add('show');
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Sign In';
+      }
+    }, 500);
   });
-
-  function getErrorMessage(code) {
-    switch (code) {
-      case 'auth/invalid-email':
-        return 'Invalid email address.';
-      case 'auth/user-disabled':
-        return 'This account has been disabled.';
-      case 'auth/user-not-found':
-        return 'No account found with this email.';
-      case 'auth/wrong-password':
-        return 'Incorrect password.';
-      case 'auth/invalid-credential':
-        return 'Invalid email or password.';
-      default:
-        return 'An error occurred. Please try again.';
-    }
-  }
 </script>
 
 </body>
