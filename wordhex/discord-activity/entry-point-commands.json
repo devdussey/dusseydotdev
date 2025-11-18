@@ -1,0 +1,54 @@
+[
+  {
+    "name": "wordhex",
+    "type": 1,
+    "description": "Launch the Wordhex Discord Activity",
+    "integration_types": [0, 1],
+    "contexts": [0, 1, 2],
+    "default_member_permissions": "0",
+    "nsfw": false,
+    "options": [
+      {
+        "type": 1,
+        "name": "practice",
+        "description": "Open a solo practice board inside Discord",
+        "options": [
+          {
+            "type": 3,
+            "name": "difficulty",
+            "description": "Bot skill level",
+            "required": false,
+            "choices": [
+              { "name": "casual", "value": "casual" },
+              { "name": "standard", "value": "standard" },
+              { "name": "elite", "value": "elite" }
+            ]
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "lobby",
+        "description": "Create a multiplayer lobby for friends",
+        "options": [
+          {
+            "type": 4,
+            "name": "rounds",
+            "description": "How many rounds should run",
+            "required": false,
+            "min_value": 1,
+            "max_value": 8
+          },
+          {
+            "type": 4,
+            "name": "players",
+            "description": "Maximum players allowed",
+            "required": false,
+            "min_value": 2,
+            "max_value": 8
+          }
+        ]
+      }
+    ]
+  }
+]

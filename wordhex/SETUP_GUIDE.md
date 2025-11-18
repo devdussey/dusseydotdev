@@ -195,6 +195,13 @@ Copy `.env.example` to `.env.local` and fill with your values.
 
 ## 📖 Additional Resources
 
+- [`wordhex/discord-activity`](./discord-activity) – ready-to-upload Discord Activity payload (HTML, CSS, JS).
+- [`wordhex/discord-activity/entry-point-commands.json`](./discord-activity/entry-point-commands.json) – slash commands that
+  comply with the [Entry Point Commands](https://discord.com/developers/docs/interactions/application-commands#entry-point-commands)
+  spec. Import these in the Developer Portal so `/wordhex` launches the activity.
+- Run `npm run package:wordhex-activity` to zip the manifest, commands, and public assets into `wordhex/wordhex-activity.zip`
+  for Discord's "Upload Activity Build" workflow.
+
 - [Supabase Documentation](https://supabase.com/docs)
 - [Row-Level Security Guide](https://supabase.com/docs/guides/auth/row-level-security)
 - [Data API Documentation](https://supabase.com/docs/guides/api)

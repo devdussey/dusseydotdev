@@ -1,0 +1,28 @@
+{
+  "manifest_version": 1,
+  "activity": {
+    "name": "Wordhex",
+    "slug": "wordhex",
+    "summary": "SpellCast-inspired multiplayer word hunt built for Discord Activities.",
+    "version": "0.1.0",
+    "platform": "web"
+  },
+  "entry_point": {
+    "path": "public/index.html",
+    "content_security_policy": "frame-ancestors https://discord.com https://*.discordapp.com",
+    "public_path": "public",
+    "type": "static"
+  },
+  "oauth2": {
+    "scopes": ["identify", "applications.commands"],
+    "requires_code_grant": true
+  },
+  "discord_sdk": {
+    "minimum_version": "1.0.0",
+    "commands": ["AUTHORIZE", "AUTHENTICATE"]
+  },
+  "testing": {
+    "recommended_clients": ["desktop", "web", "mobile"],
+    "max_concurrent_players": 8
+  }
+}
