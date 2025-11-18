@@ -11,7 +11,11 @@ if (!supabaseUrl || !supabaseServiceKey) {
   console.error('Missing Supabase env vars');
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  db: {
+    schema: 'api'
+  }
+});
 
 // Discord OAuth credentials
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
