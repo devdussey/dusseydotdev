@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wordhex Lobbies</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090b12;
+      --panel: rgba(20, 26, 44, 0.85);
+      --text: #f8f9ff;
+      --muted: #b5b9d8;
+      --accent: #8c71ff;
+      --accent-strong: #b891ff;
+      --danger: #ff668c;
+      --success: #5cf1c5;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(140, 113, 255, 0.25), transparent 55%),
+        radial-gradient(circle at bottom, rgba(88, 241, 255, 0.18), transparent 45%),
+        var(--bg);
+      color: var(--text);
+      padding: 3rem 1.5rem 4rem;
+    }
+
+    .container {
+      width: min(1100px, 100%);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      letter-spacing: 0.08em;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .ghost-link {
+      text-decoration: none;
+      color: var(--muted);
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .ghost-link:hover {
+      color: var(--text);
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      border: none;
+      color: #fff;
+      padding: 0.85rem 1.5rem;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 35px rgba(140, 113, 255, 0.35);
+    }
+
+    .lobby-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .lobby-card {
+      background: var(--panel);
+      border-radius: 20px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      box-shadow: 0 25px 65px rgba(9, 11, 18, 0.65);
+    }
+
+    .lobby-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .lobby-code {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+    }
+
+    .status {
+      padding: 0.2rem 0.7rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .status.waiting {
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .status.active {
+      border-color: rgba(92, 241, 197, 0.4);
+      color: var(--success);
+    }
+
+    .status.complete {
+      border-color: rgba(255, 102, 140, 0.4);
+      color: var(--danger);
+    }
+
+    .lobby-card h2 {
+      margin: 0;
+      font-size: 1.3rem;
+    }
+
+    .lobby-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .lobby-meta span {
+      display: block;
+    }
+
+    .lobby-meta strong {
+      display: block;
+      color: var(--text);
+      font-size: 1.1rem;
+    }
+
+    .lobby-card button {
+      margin-top: 0.25rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 12px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      background: rgba(140, 113, 255, 0.2);
+      color: var(--text);
+      border: 1px solid rgba(140, 113, 255, 0.4);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .lobby-card button:hover {
+      transform: translateY(-2px);
+      background: rgba(140, 113, 255, 0.35);
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 18px;
+    }
+
+    @media (max-width: 640px) {
+      .header-actions {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .lobby-meta {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <p class="eyebrow">Wordhex Multiplayer</p>
+      <h1>Lobby Browser</h1>
+      <p>Pick an open lobby or create your own pin in seconds.</p>
+      <div class="header-actions">
+        <a class="ghost-link" href="index.html">← Back to overview</a>
+        <button class="primary-btn" id="create-lobby">+ Create Lobby</button>
+      </div>
+    </header>
+
+    <section class="lobby-list" id="lobby-list"></section>
+  </div>
+
+  <script type="module">
+    import { lobbyService, ensurePlayerProfile, LOBBY_DEFAULTS } from "./scripts/lobby-service.js";
+
+    const lobbyListEl = document.getElementById("lobby-list");
+    const createLobbyBtn = document.getElementById("create-lobby");
+    const playerProfile = ensurePlayerProfile();
+
+    const escapeHtml = (text = "") =>
+      text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+    const formatUpdated = (isoDate) => {
+      if (!isoDate) return "Just now";
+      const diff = Date.now() - new Date(isoDate).getTime();
+      if (diff < 60_000) return "Just now";
+      if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+      if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+      return `${Math.floor(diff / 86_400_000)}d ago`;
+    };
+
+    const persistLobbyCode = (code) => {
+      try {
+        sessionStorage.setItem("wordhex:lastLobbyCode", code);
+      } catch (error) {
+        console.warn("Unable to cache lobby code", error);
+      }
+    };
+
+    const joinLobby = (code) => {
+      lobbyService.ensureLobby(code);
+      lobbyService.joinLobby(code, {
+        id: playerProfile.id,
+        name: playerProfile.name,
+        score: 0,
+        ready: false,
+        isActive: true
+      });
+      persistLobbyCode(code);
+      window.location.href = `board.html?code=${code}`;
+    };
+
+    const renderLobbies = (lobbies = []) => {
+      lobbyListEl.innerHTML = "";
+      if (!lobbies.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.textContent = "No active lobbies yet. Create one to get started.";
+        lobbyListEl.appendChild(empty);
+        return;
+      }
+
+      lobbies.forEach((lobby) => {
+        const players = lobby.players || [];
+        const readyCount = players.filter((player) => player.ready).length;
+        const statusLabel = lobby.status || 'waiting';
+        const normalizedStatus = ['waiting', 'active', 'complete'].includes(statusLabel) ? statusLabel : 'waiting';
+        const maxPlayers = lobby.maxPlayers || lobby.max_players || LOBBY_DEFAULTS.maxPlayers;
+        const card = document.createElement("article");
+        card.className = "lobby-card";
+        card.innerHTML = `
+          <div class="lobby-card__header">
+            <span class="lobby-code">${lobby.code}</span>
+            <span class="status ${normalizedStatus}">${escapeHtml(statusLabel)}</span>
+          </div>
+          <div>
+            <h2>${escapeHtml(lobby.hostName || "Unknown Host")}</h2>
+            <p>${escapeHtml(lobby.channel || LOBBY_DEFAULTS.channel)}</p>
+          </div>
+          <div class="lobby-meta">
+            <div>
+              <span>Players</span>
+              <strong>${players.length} / ${maxPlayers}</strong>
+            </div>
+            <div>
+              <span>Ready</span>
+              <strong>${readyCount}</strong>
+            </div>
+            <div>
+              <span>Mode</span>
+              <strong>${escapeHtml(lobby.settings?.mode || LOBBY_DEFAULTS.mode)}</strong>
+            </div>
+            <div>
+              <span>Updated</span>
+              <strong>${formatUpdated(lobby.updatedAt)}</strong>
+            </div>
+          </div>
+          <button type="button" data-join="${lobby.code}">Join Lobby</button>
+        `;
+        lobbyListEl.appendChild(card);
+      });
+    };
+
+    lobbyService.subscribeToLobbyList(renderLobbies);
+
+    createLobbyBtn.addEventListener("click", () => {
+      const lobby = lobbyService.createLobby({
+        hostId: playerProfile.id,
+        hostName: playerProfile.name
+      });
+      joinLobby(lobby.code);
+    });
+
+    lobbyListEl.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-join]");
+      if (!button) return;
+      joinLobby(button.dataset.join);
+    });
+  </script>
+</body>
+</html>

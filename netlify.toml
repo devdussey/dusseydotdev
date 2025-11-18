@@ -9,6 +9,11 @@
   to = "/wordhex/index.html"
   status = 200
 
+[[redirects]]
+  from = "/workspace/docs/*"
+  to = "/404.html"
+  status = 404
+
 # Headers for Discord Activity CSP
 [[headers]]
   for = "/wordhex/*"
