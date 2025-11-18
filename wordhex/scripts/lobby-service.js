@@ -3,9 +3,9 @@ const PROFILE_KEY = "wordhex:player-profile";
 const CHANNEL_NAME = "wordhex:lobby-sync";
 
 const defaultLobbySettings = {
-  mode: "Competitive Draft",
+  mode: "Unranked",
   rounds: 5,
-  roundDuration: 30,
+  roundDuration: 0,
   winCondition: "Highest score after 5 rounds",
   dictionary: "Tournament (NA)",
   channel: "#spellcast-practice",

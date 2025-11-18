@@ -150,31 +150,43 @@
     #board {
       display: grid;
       gap: 0.75rem;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
     }
 
-    .tile {
+    #board button.tile {
+      all: unset;
       position: relative;
       border-radius: 16px;
-      padding: 0.85rem 0.4rem 0.6rem;
+      padding: 1rem 0.35rem 0.55rem;
       background: var(--tile-bg);
       border: 1px solid transparent;
       text-align: center;
-      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 0.15rem;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
     }
 
-    .tile:hover {
+    #board button.tile:hover,
+    #board button.tile:focus-visible {
       transform: translateY(-4px);
       border-color: var(--tile-border);
-      box-shadow: 0 18px 28px rgba(9, 11, 18, 0.6);
+      box-shadow: 0 18px 30px rgba(9, 11, 18, 0.65);
     }
 
-    .letter {
-      font-size: 1.6rem;
+    #board button.tile:focus-visible {
+      border-color: var(--accent);
+    }
+
+    #board button.tile .letter {
+      font-size: clamp(1.25rem, 2vw, 1.7rem);
       font-weight: 700;
     }
 
-    .value {
+    #board button.tile .value {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -182,9 +194,9 @@
       font-weight: 600;
       color: var(--muted);
       background: rgba(255, 255, 255, 0.04);
-      padding: 0.3rem 0.55rem;
+      padding: 0.25rem 0.55rem;
       border-radius: 999px;
-      margin-top: 0.45rem;
+      margin-top: 0.35rem;
     }
 
     .tile[data-multiplier="DL"] {
@@ -274,22 +286,6 @@
       margin-top: 0.75rem;
       display: flex;
       gap: 0.5rem;
-    }
-
-    #timer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-      margin-top: 1.25rem;
-      padding-top: 1.25rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .time-display {
-      font-size: 2rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
     }
 
     button {
@@ -415,8 +411,7 @@
       gap: 1.25rem;
     }
 
-    #activity-feed,
-    #party-chat {
+    #activity-feed {
       background: rgba(255, 255, 255, 0.03);
       padding: 1rem;
       border-radius: 16px;
@@ -425,8 +420,7 @@
       gap: 0.75rem;
     }
 
-    #activity-feed h3,
-    #party-chat h3 {
+    #activity-feed h3 {
       margin: 0;
       font-size: 1rem;
     }
@@ -440,64 +434,76 @@
       font-size: 0.9rem;
     }
 
-    #chat-log {
-      max-height: 220px;
-      overflow: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-    }
-
-    .chat-message {
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: 12px;
-      padding: 0.6rem;
-    }
-
-    .chat-meta {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-bottom: 0.25rem;
-    }
-
-    #chat-form {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 0.5rem;
-    }
-
-    #chat-form input {
-      margin-top: 0;
-    }
-
     .subtle {
       color: var(--muted);
       font-size: 0.85rem;
       margin: 0.25rem 0 0;
     }
 
-    @media (max-width: 1024px) {
+    .host-name-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .host-name-row button {
+      font-size: 0.75rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+    }
+
+    .host-name-row button:not(:disabled):hover {
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    @media (max-width: 1100px) {
       main {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       }
       .lobby-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 780px) {
+    @media (max-width: 840px) {
       main {
         grid-template-columns: 1fr;
       }
 
       body {
-        padding: 1.5rem 1rem 3rem;
+        padding: 1.5rem 1rem 2rem;
       }
 
       .lobby-grid {
         grid-template-columns: 1fr;
+      }
+
+      .panel {
+        padding: 1.25rem;
+      }
+
+      #match-settings {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 1.25rem 0.85rem 1.75rem;
+      }
+      .host-name-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      #board {
+        gap: 0.5rem;
+      }
+      #board button.tile {
+        padding: 0.85rem 0.3rem 0.45rem;
       }
     }
   </style>
@@ -523,7 +529,10 @@
       <div class="lobby-meta">
         <div>
           <span class="label">Host</span>
-          <strong id="lobby-host">You</strong>
+          <div class="host-name-row">
+            <strong id="lobby-host">You</strong>
+            <button id="edit-host-name" class="secondary host-rename" type="button" hidden>Rename</button>
+          </div>
         </div>
         <div>
           <span class="label">Players Ready</span>
@@ -546,14 +555,6 @@
       <div class="player-actions">
         <button id="ready-up" class="secondary">Ready Up</button>
       </div>
-
-      <section id="timer">
-        <div>
-          <div class="label">Round Timer</div>
-          <div class="time-display" id="time-remaining">30</div>
-        </div>
-        <button id="start-timer">Start</button>
-      </section>
 
       <div id="status">Loading Discord SDK…</div>
     </aside>
@@ -601,17 +602,6 @@
         <div id="feed-entries"></div>
       </section>
 
-      <section id="party-chat">
-        <header>
-          <h3>Party Chat</h3>
-          <span class="label">Coordinate strategy without leaving Discord.</span>
-        </header>
-        <div id="chat-log"></div>
-        <form id="chat-form">
-          <input type="text" id="chat-input" placeholder="Send a message to the lobby" required maxlength="160" />
-          <button type="submit" class="secondary">Send</button>
-        </form>
-      </section>
     </aside>
   </main>
 
@@ -627,8 +617,6 @@
     const playerList = document.getElementById("player-list");
     const gemCountEl = document.getElementById("gem-count");
     const gemButtons = document.querySelectorAll(".gem-actions button");
-    const startTimerBtn = document.getElementById("start-timer");
-    const timeRemainingEl = document.getElementById("time-remaining");
     const readyButton = document.getElementById("ready-up");
     const lobbyStatus = document.getElementById("lobby-status");
     const readyCountEl = document.getElementById("ready-count");
@@ -639,9 +627,7 @@
     const startMatchBtn = document.getElementById("start-match");
     const matchSettingsEl = document.getElementById("match-settings");
     const feedEntries = document.getElementById("feed-entries");
-    const chatLog = document.getElementById("chat-log");
-    const chatForm = document.getElementById("chat-form");
-    const chatInput = document.getElementById("chat-input");
+    const editHostNameBtn = document.getElementById("edit-host-name");
 
     const letterPool = [
       { letters: "AEIO", value: 1, weight: 32 },
@@ -658,8 +644,6 @@
 
     let board = [];
     let gemCount = 3;
-    let timerInterval = null;
-    let timeRemaining = 30;
 
     let playerProfile = ensurePlayerProfile();
     let activeLobby = null;
@@ -693,16 +677,7 @@
 
     cacheLobbyCode(lobbyCode);
 
-    const activityFeed = [
-      { player: "Nova", detail: "found <strong>QUARTZ</strong>", value: "+42" },
-      { player: "Atlas", detail: "triggered Swap", value: "-3✦" },
-      { player: "Mira", detail: "queued hint for the squad", value: "-4✦" }
-    ];
-
-    const chatMessages = [
-      { author: "Nova", time: "12:42", message: "Let's focus on center multipliers first." },
-      { author: "Atlas", time: "12:42", message: "Copy that, saving gems for late game." }
-    ];
+    const activityFeed = [];
 
     const renderPlayers = () => {
       playerList.innerHTML = "";
@@ -740,9 +715,11 @@
       const settings = activeLobby?.settings || {};
       const rounds = settings.rounds ?? LOBBY_DEFAULTS.rounds;
       const roundDuration = settings.roundDuration ?? settings.roundDurationSeconds ?? LOBBY_DEFAULTS.roundDuration;
+      const roundDurationLabel =
+        roundDuration > 0 ? `${rounds} (${roundDuration}s each)` : `${rounds} (No timer)`;
       return [
         { label: "Game Mode", value: settings.mode ?? LOBBY_DEFAULTS.mode },
-        { label: "Rounds", value: `${rounds} (${roundDuration}s each)` },
+        { label: "Rounds", value: roundDurationLabel },
         { label: "Win Condition", value: settings.winCondition ?? LOBBY_DEFAULTS.winCondition },
         { label: "Dictionary", value: settings.dictionary ?? LOBBY_DEFAULTS.dictionary }
       ];
@@ -766,6 +743,25 @@
       renderMatchSettings();
       updateLobbyMeta();
     };
+
+    const updateHostControls = () => {
+      const isHost = activeLobby?.hostId === playerProfile.id;
+      if (editHostNameBtn) {
+        editHostNameBtn.hidden = !isHost;
+      }
+    };
+
+    const handleHostRename = () => {
+      if (!activeLobby || activeLobby.hostId !== playerProfile.id) return;
+      const currentName = lobbyHostEl.textContent.trim();
+      const nextName = window.prompt("Set your host display name", currentName) ?? "";
+      const normalized = nextName.trim();
+      if (!normalized || normalized === currentName) return;
+      playerProfile = updatePlayerProfile({ name: normalized });
+      lobbyService.updatePlayerName(activeLobby.code, playerProfile.id, normalized);
+    };
+
+    editHostNameBtn?.addEventListener("click", handleHostRename);
 
     const initLobbySync = () => {
       lobbyService.ensureLobby(lobbyCode, {
@@ -797,6 +793,7 @@
         lobbyStatus.textContent = "Setting up lobby…";
         readyButton.disabled = true;
         startMatchBtn.disabled = true;
+        updateHostControls();
         return;
       }
 
@@ -826,10 +823,12 @@
       lobbyHostEl.textContent = activeLobby.hostName || "Host";
       lobbyChannelEl.textContent = activeLobby.channel || LOBBY_DEFAULTS.channel;
       lobbyCodeEl.textContent = activeLobby.code;
+      updateHostControls();
     };
 
     const renderFeed = () => {
       feedEntries.innerHTML = "";
+      if (!activityFeed.length) return;
       activityFeed.forEach((entry) => {
         const div = document.createElement("div");
         div.className = "feed-entry";
@@ -841,29 +840,6 @@
         `;
         feedEntries.appendChild(div);
       });
-    };
-
-    const renderChat = () => {
-      chatLog.innerHTML = "";
-      chatMessages.forEach((message) => {
-        const div = document.createElement("div");
-        div.className = "chat-message";
-
-        const meta = document.createElement("div");
-        meta.className = "chat-meta";
-        const author = document.createElement("strong");
-        author.textContent = message.author;
-        const time = document.createElement("span");
-        time.textContent = message.time;
-        meta.append(author, time);
-
-        const text = document.createElement("p");
-        text.textContent = message.message;
-
-        div.append(meta, text);
-        chatLog.appendChild(div);
-      });
-      chatLog.scrollTop = chatLog.scrollHeight;
     };
 
     const randomLetter = () => {
@@ -904,10 +880,17 @@
       return tiles;
     };
 
+    const addLetterToInput = (letter) => {
+      if (!wordInput) return;
+      wordInput.value = `${wordInput.value}${letter}`;
+      wordInput.focus();
+    };
+
     const renderBoard = () => {
       boardEl.innerHTML = "";
       board.forEach((tile) => {
-        const tileEl = document.createElement("div");
+        const tileEl = document.createElement("button");
+        tileEl.type = "button";
         tileEl.className = "tile";
         if (tile.multiplier) tileEl.dataset.multiplier = tile.multiplier;
         if (tile.word) tileEl.dataset.word = tile.word;
@@ -916,6 +899,8 @@
           <div class="letter">${tile.letter}</div>
           <div class="value">${tile.value}pt</div>
         `;
+        tileEl.setAttribute("aria-label", `${tile.letter} tile, worth ${tile.value} points`);
+        tileEl.addEventListener("click", () => addLetterToInput(tile.letter));
         boardEl.appendChild(tileEl);
       });
     };
@@ -1009,16 +994,6 @@
       }
     });
 
-    chatForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const message = chatInput.value.trim();
-      if (!message) return;
-      const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      chatMessages.push({ author: "You", time: timestamp, message });
-      chatInput.value = "";
-      renderChat();
-    });
-
     const flashStatus = (message, type = "info") => {
       status.innerHTML = message;
       status.dataset.type = type;
@@ -1102,31 +1077,6 @@
       wordInput.focus();
     });
 
-    const resetTimer = () => {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      timeRemaining = 30;
-      timeRemainingEl.textContent = timeRemaining;
-      startTimerBtn.disabled = false;
-    };
-
-    startTimerBtn.addEventListener("click", () => {
-      if (timerInterval) return;
-      startTimerBtn.disabled = true;
-      flashStatus("Round started", "info");
-      timerInterval = setInterval(() => {
-        timeRemaining -= 1;
-        timeRemainingEl.textContent = Math.max(0, timeRemaining);
-        if (timeRemaining <= 0) {
-          clearInterval(timerInterval);
-          timerInterval = null;
-          flashStatus("Round complete", "success");
-          status.style.color = "var(--success)";
-          setTimeout(() => startTimerBtn.removeAttribute("disabled"), 1200);
-        }
-      }, 1000);
-    });
-
     const initDiscord = async () => {
       const { discordSdk } = window;
       if (!discordSdk) {
@@ -1156,9 +1106,7 @@
       renderBoard();
       updateGemCount(gemCount);
       renderFeed();
-      renderChat();
       updateLobbyMeta();
-      resetTimer();
       initLobbySync();
       initDiscord();
     };
