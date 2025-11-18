@@ -1,12 +1,13 @@
 // Netlify Function: Discord OAuth Handler
 // Exchanges Discord auth code for user data and stores in Supabase
 
-const { createClient } = require('@supabase/supabase-js');
+const { Pool } = require('pg');
 
-// Initialize Supabase
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Use direct PostgreSQL connection (bypasses Data API schema restrictions)
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 // Discord OAuth credentials
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
@@ -82,64 +83,39 @@ exports.handler = async (event) => {
 
     const discordUser = await userResponse.json();
 
-    // Step 3: Store/update user in Supabase using direct SQL (service role bypasses schema restrictions)
-    const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
-
-    // Use RPC to insert/update user (works with service role)
+    // Step 3: Store/update user in database using direct SQL
     let userId;
 
     try {
-      // Try to find existing user first
-      const { data: existingUser } = await supabaseAdmin
-        .from('users')
-        .select('id')
-        .eq('discord_id', discordUser.id)
-        .maybeSingle();
+      const avatarUrl = discordUser.avatar
+        ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
+        : null;
 
-      if (existingUser) {
+      // Check if user exists
+      const checkResult = await pool.query(
+        'SELECT id FROM public.users WHERE discord_id = $1',
+        [discordUser.id]
+      );
+
+      if (checkResult.rows.length > 0) {
         // Update existing user
-        const { data, error } = await supabaseAdmin
-          .from('users')
-          .update({
-            discord_username: discordUser.username,
-            avatar_url: discordUser.avatar ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png` : null,
-            email: discordUser.email,
-            updated_at: new Date().toISOString()
-          })
-          .eq('discord_id', discordUser.id)
-          .select('id')
-          .single();
-
-        if (error) {
-          console.error('Supabase update error:', error);
-          throw error;
-        }
-
-        userId = data.id;
+        const updateResult = await pool.query(
+          `UPDATE public.users
+           SET discord_username = $1, avatar_url = $2, email = $3, updated_at = NOW()
+           WHERE discord_id = $4
+           RETURNING id`,
+          [discordUser.username, avatarUrl, discordUser.email, discordUser.id]
+        );
+        userId = updateResult.rows[0].id;
       } else {
         // Create new user
-        const { data, error } = await supabaseAdmin
-          .from('users')
-          .insert([{
-            discord_id: discordUser.id,
-            discord_username: discordUser.username,
-            avatar_url: discordUser.avatar ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png` : null,
-            email: discordUser.email
-          }])
-          .select('id')
-          .single();
-
-        if (error) {
-          console.error('Supabase insert error:', error);
-          throw error;
-        }
-
-        userId = data.id;
+        const insertResult = await pool.query(
+          `INSERT INTO public.users (discord_id, discord_username, avatar_url, email, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, NOW(), NOW())
+           RETURNING id`,
+          [discordUser.id, discordUser.username, avatarUrl, discordUser.email]
+        );
+        userId = insertResult.rows[0].id;
       }
     } catch (dbError) {
       console.error('Database operation error:', dbError);
