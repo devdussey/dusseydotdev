@@ -49,6 +49,35 @@
     font-size: 14px;
   }
 
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+  }
+
+  .tab-btn.active {
+    color: #fff;
+    border-bottom-color: #667eea;
+  }
+
+  .tab-btn:hover {
+    color: #fff;
+  }
+
   .form-group {
     margin-bottom: 20px;
   }
@@ -111,10 +140,7 @@
     transform: none;
   }
 
-  .error {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #fca5a5;
+  .message {
     padding: 12px;
     border-radius: 8px;
     font-size: 14px;
@@ -122,7 +148,27 @@
     display: none;
   }
 
-  .error.show {
+  .error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+  }
+
+  .success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #86efac;
+  }
+
+  .message.show {
+    display: block;
+  }
+
+  .form-section {
+    display: none;
+  }
+
+  .form-section.active {
     display: block;
   }
 
@@ -148,59 +194,191 @@
 <div class="login-container">
   <div class="logo">
     <h1>Workspace</h1>
-    <p>Sign in to continue</p>
+    <p>Sign in or create an account</p>
   </div>
 
-  <div class="error" id="error"></div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="login">Sign In</button>
+    <button class="tab-btn" data-tab="register">Register</button>
+  </div>
 
-  <form id="loginForm">
+  <div class="message" id="message"></div>
+
+  <!-- Login Form -->
+  <form id="loginForm" class="form-section active">
     <div class="form-group">
-      <label for="email">Email</label>
-      <input type="email" id="email" placeholder="your@email.com" required autocomplete="email">
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" placeholder="your@email.com" required autocomplete="email">
     </div>
 
     <div class="form-group">
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
     </div>
 
     <button type="submit" class="btn" id="loginBtn">Sign In</button>
   </form>
 
+  <!-- Register Form -->
+  <form id="registerForm" class="form-section">
+    <div class="form-group">
+      <label for="registerUsername">Username</label>
+      <input type="text" id="registerUsername" placeholder="Choose a username" required>
+    </div>
+
+    <div class="form-group">
+      <label for="registerEmail">Email</label>
+      <input type="email" id="registerEmail" placeholder="your@email.com" required autocomplete="email">
+    </div>
+
+    <div class="form-group">
+      <label for="registerPassword">Password</label>
+      <input type="password" id="registerPassword" placeholder="••••••••" required>
+    </div>
+
+    <div class="form-group">
+      <label for="registerConfirm">Confirm Password</label>
+      <input type="password" id="registerConfirm" placeholder="••••••••" required>
+    </div>
+
+    <button type="submit" class="btn" id="registerBtn">Create Account</button>
+  </form>
+
   <div class="back-link">
-    <a href="index.html">← Back to home</a>
+    <a href="/">← Back to home</a>
   </div>
 </div>
 
 <script>
-  const form = document.getElementById('loginForm');
-  const errorDiv = document.getElementById('error');
-  const loginBtn = document.getElementById('loginBtn');
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
 
-  form.addEventListener('submit', (e) => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+
+      btn.classList.add('active');
+      document.getElementById(tab + 'Form').classList.add('active');
+
+      // Clear messages
+      const msg = document.getElementById('message');
+      msg.classList.remove('show', 'error', 'success');
+    });
+  });
+
+  // Initialize accounts from localStorage
+  function initializeAccounts() {
+    if (!localStorage.getItem('accounts')) {
+      // Create a demo account
+      const accounts = [{
+        id: '1',
+        username: 'demo',
+        email: 'demo@example.com',
+        password: 'demo123'
+      }];
+      localStorage.setItem('accounts', JSON.stringify(accounts));
+    }
+  }
+
+  function showMessage(text, type = 'error') {
+    const msg = document.getElementById('message');
+    msg.textContent = text;
+    msg.className = 'message show ' + type;
+  }
+
+  function getAccounts() {
+    return JSON.parse(localStorage.getItem('accounts') || '[]');
+  }
+
+  function saveAccounts(accounts) {
+    localStorage.setItem('accounts', JSON.stringify(accounts));
+  }
+
+  // Login
+  document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
 
-    errorDiv.classList.remove('show');
+    const loginBtn = document.getElementById('loginBtn');
     loginBtn.disabled = true;
     loginBtn.textContent = 'Signing in...';
 
-    // Simulate authentication delay
     setTimeout(() => {
-      if (email && password && password.length >= 6) {
-        // Store session and redirect
-        sessionStorage.setItem('user', JSON.stringify({ email }));
+      const accounts = getAccounts();
+      const user = accounts.find(a => a.email === email && a.password === password);
+
+      if (user) {
+        sessionStorage.setItem('user', JSON.stringify({ id: user.id, username: user.username, email: user.email }));
         window.location.href = '../workspace/';
       } else {
-        errorDiv.textContent = password.length < 6 ? 'Password must be at least 6 characters.' : 'Invalid email or password.';
-        errorDiv.classList.add('show');
+        showMessage('Invalid email or password.', 'error');
         loginBtn.disabled = false;
         loginBtn.textContent = 'Sign In';
       }
     }, 500);
   });
+
+  // Register
+  document.getElementById('registerForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const username = document.getElementById('registerUsername').value;
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+    const confirm = document.getElementById('registerConfirm').value;
+
+    const registerBtn = document.getElementById('registerBtn');
+
+    if (password !== confirm) {
+      showMessage('Passwords do not match.', 'error');
+      return;
+    }
+
+    if (password.length < 6) {
+      showMessage('Password must be at least 6 characters.', 'error');
+      return;
+    }
+
+    const accounts = getAccounts();
+
+    if (accounts.find(a => a.email === email)) {
+      showMessage('Email already registered.', 'error');
+      return;
+    }
+
+    if (accounts.find(a => a.username === username)) {
+      showMessage('Username already taken.', 'error');
+      return;
+    }
+
+    registerBtn.disabled = true;
+    registerBtn.textContent = 'Creating account...';
+
+    setTimeout(() => {
+      const newAccount = {
+        id: Date.now().toString(),
+        username,
+        email,
+        password
+      };
+
+      accounts.push(newAccount);
+      saveAccounts(accounts);
+
+      showMessage('Account created! Signing you in...', 'success');
+
+      setTimeout(() => {
+        sessionStorage.setItem('user', JSON.stringify({ id: newAccount.id, username: newAccount.username, email: newAccount.email }));
+        window.location.href = '../workspace/';
+      }, 1000);
+    }, 500);
+  });
+
+  // Initialize on page load
+  window.addEventListener('load', initializeAccounts);
 </script>
 
 </body>

@@ -12,6 +12,35 @@ body {
   color: #fff;
   padding: 12px 20px;
   font-size: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.user-info {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.logout-btn {
+  padding: 8px 16px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  color: #fca5a5;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.3);
 }
 
 .editor-container {

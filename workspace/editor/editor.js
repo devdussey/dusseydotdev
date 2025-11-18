@@ -1,3 +1,20 @@
+// Session check
+window.addEventListener('load', () => {
+  const user = sessionStorage.getItem('user');
+  if (!user) {
+    window.location.href = '../../login/';
+  } else {
+    const userData = JSON.parse(user);
+    document.getElementById('userInfo').textContent = userData.username;
+  }
+});
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  sessionStorage.removeItem('user');
+  window.location.href = '../../login/';
+});
+
 const fileInput = document.getElementById("fileInput");
 const canvas = document.getElementById("editorCanvas");
 const ctx = canvas.getContext("2d");
