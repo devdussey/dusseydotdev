@@ -1,7 +1,7 @@
 # Main site deployment
 [build]
   publish = "/"
-  command = "echo 'Static site'"
+  command = "npm install && echo 'Build complete'"
 
 # Redirect rules for different paths
 [[redirects]]

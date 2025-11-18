@@ -1,0 +1,23 @@
+{
+  "name": "dussey-dev",
+  "version": "1.0.0",
+  "description": "DevDussey Portfolio - Workspace, Photo Editor, and WordHex Game",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'Static site - no build needed'"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "portfolio",
+    "workspace",
+    "photo-editor",
+    "wordhex",
+    "game",
+    "discord"
+  ],
+  "author": "DevDussey",
+  "license": "MIT"
+}

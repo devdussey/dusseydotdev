@@ -1,8 +1,0 @@
-{
-  "name": "wordhex-netlify-functions",
-  "version": "1.0.0",
-  "description": "Netlify Functions for WordHex Discord OAuth",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.38.0"
-  }
-}
