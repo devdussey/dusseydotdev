@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wordhex – Discord Activity</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090b12;
+      --bg-alt: #121728;
+      --panel: rgba(20, 26, 44, 0.85);
+      --accent: #8c71ff;
+      --accent-strong: #b891ff;
+      --accent-soft: rgba(140, 113, 255, 0.2);
+      --text: #f8f9ff;
+      --muted: #b5b9d8;
+      --danger: #ff668c;
+      --success: #5cf1c5;
+      --tile-bg: rgba(18, 23, 40, 0.9);
+      --tile-border: rgba(140, 113, 255, 0.4);
+      --gem: #58f1ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(140, 113, 255, 0.25), transparent 55%),
+        radial-gradient(circle at bottom, rgba(88, 241, 255, 0.18), transparent 45%),
+        var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1.5rem 3rem;
+      gap: 2rem;
+    }
+
+    header {
+      text-align: center;
+    }
+
+    h1 {
+      font-size: clamp(2.25rem, 4vw, 3rem);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin: 0 0 0.5rem;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(240px, 280px) minmax(320px, 1fr) minmax(240px, 280px);
+      gap: 1.5rem;
+      width: min(1100px, 100%);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 1.4rem;
+      box-shadow: 0 40px 80px rgba(9, 11, 18, 0.55);
+      backdrop-filter: blur(14px);
+    }
+
+    .panel h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin: 0 0 1rem;
+      color: var(--muted);
+    }
+
+    #board {
+      display: grid;
+      gap: 0.75rem;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .tile {
+      position: relative;
+      border-radius: 16px;
+      padding: 0.85rem 0.4rem 0.6rem;
+      background: var(--tile-bg);
+      border: 1px solid transparent;
+      text-align: center;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .tile:hover {
+      transform: translateY(-4px);
+      border-color: var(--tile-border);
+      box-shadow: 0 18px 28px rgba(9, 11, 18, 0.6);
+    }
+
+    .letter {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    .value {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 0.3rem 0.55rem;
+      border-radius: 999px;
+      margin-top: 0.45rem;
+    }
+
+    .tile[data-multiplier="DL"] {
+      border-color: rgba(88, 241, 197, 0.5);
+    }
+
+    .tile[data-multiplier="TL"] {
+      border-color: rgba(255, 200, 120, 0.6);
+    }
+
+    .tile[data-word="DW"] {
+      box-shadow: inset 0 0 0 2px rgba(140, 113, 255, 0.4);
+    }
+
+    .tile[data-word="TW"] {
+      box-shadow: inset 0 0 0 2px rgba(255, 102, 140, 0.5);
+    }
+
+    .tile[data-gem="true"]::after {
+      content: "\2726";
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      font-size: 0.8rem;
+      color: var(--gem);
+    }
+
+    #scoreboard ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    #scoreboard li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 0.85rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 14px;
+      font-weight: 600;
+    }
+
+    #scoreboard li.active {
+      border: 1px solid var(--accent);
+      box-shadow: 0 10px 24px rgba(140, 113, 255, 0.25);
+    }
+
+    #timer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .time-display {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 0.65rem 1.1rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      background: var(--accent);
+      color: var(--text);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(140, 113, 255, 0.35);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    form {
+      display: grid;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    input[type="text"] {
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.7rem 1rem;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+    }
+
+    input[type="text"]:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    #word-history {
+      margin-top: 1.5rem;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .word-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0.75rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 0.9rem;
+    }
+
+    .word-entry span {
+      opacity: 0.75;
+    }
+
+    #gems {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    #gem-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    #gem-count::before {
+      content: "\2726";
+      color: var(--gem);
+      font-size: 1.25rem;
+    }
+
+    .gem-actions {
+      display: grid;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+
+    .gem-actions button {
+      background: rgba(140, 113, 255, 0.2);
+      border: 1px solid rgba(140, 113, 255, 0.45);
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .gem-actions button span {
+      opacity: 0.75;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    #status {
+      margin-top: 1.25rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 1024px) {
+      main {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 780px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      body {
+        padding: 1.5rem 1rem 3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Wordhex</h1>
+    <p>SpellCast-inspired multiplayer word hunt built for Discord Activities.</p>
+  </header>
+
+  <main>
+    <aside class="panel" id="scoreboard">
+      <h2>Players</h2>
+      <ul id="player-list"></ul>
+
+      <section id="timer">
+        <div>
+          <div class="label">Round Timer</div>
+          <div class="time-display" id="time-remaining">30</div>
+        </div>
+        <button id="start-timer">Start</button>
+      </section>
+
+      <div id="status">Loading Discord SDK…</div>
+    </aside>
+
+    <section class="panel">
+      <h2>Active Board</h2>
+      <div id="board" aria-live="polite"></div>
+
+      <form id="word-form" autocomplete="off">
+        <label for="word-input">Submit a word</label>
+        <input id="word-input" name="word" type="text" placeholder="Type your word" required minlength="2" />
+        <button type="submit">Submit Word</button>
+      </form>
+
+      <div id="word-history"></div>
+    </section>
+
+    <aside class="panel">
+      <h2>Gem Abilities</h2>
+      <div id="gems">
+        <span>Gem Reserve</span>
+        <div id="gem-count">3</div>
+      </div>
+
+      <div class="gem-actions">
+        <button data-action="shuffle">
+          Shuffle Board
+          <span>Cost: 1</span>
+        </button>
+        <button data-action="swap">
+          Swap Tiles
+          <span>Cost: 3</span>
+        </button>
+        <button data-action="hint">
+          Reveal Hint
+          <span>Cost: 4</span>
+        </button>
+      </div>
+    </aside>
+  </main>
+
+  <script src="https://discord.com/sdk/embedded.js"></script>
+  <script type="module">
+    const status = document.getElementById("status");
+    const boardEl = document.getElementById("board");
+    const wordForm = document.getElementById("word-form");
+    const wordInput = document.getElementById("word-input");
+    const wordHistory = document.getElementById("word-history");
+    const playerList = document.getElementById("player-list");
+    const gemCountEl = document.getElementById("gem-count");
+    const gemButtons = document.querySelectorAll(".gem-actions button");
+    const startTimerBtn = document.getElementById("start-timer");
+    const timeRemainingEl = document.getElementById("time-remaining");
+
+    const letterPool = [
+      { letters: "AEIO", value: 1, weight: 32 },
+      { letters: "DGLNRSTU", value: 2, weight: 28 },
+      { letters: "BCFHMVPWY", value: 3, weight: 20 },
+      { letters: "K", value: 4, weight: 8 },
+      { letters: "JX", value: 5, weight: 6 },
+      { letters: "QZ", value: 8, weight: 6 }
+    ];
+
+    const multiplierTiles = ["DL", "DL", "TL", "TL"];
+    const wordTiles = ["DW", "DW", "TW"];
+    const gemTileCount = 5;
+
+    let board = [];
+    let gemCount = 3;
+    let timerInterval = null;
+    let timeRemaining = 30;
+
+    const samplePlayers = [
+      { id: "me", name: "You", score: 0, isActive: true },
+      { id: "1", name: "Nova", score: 28 },
+      { id: "2", name: "Atlas", score: 21 },
+      { id: "3", name: "Mira", score: 17 }
+    ];
+
+    const renderPlayers = () => {
+      playerList.innerHTML = "";
+      samplePlayers
+        .sort((a, b) => b.score - a.score)
+        .forEach((player, index) => {
+          const li = document.createElement("li");
+          if (player.isActive) li.classList.add("active");
+          li.innerHTML = `
+            <span>${index + 1}. ${player.name}</span>
+            <span>${player.score}</span>
+          `;
+          playerList.appendChild(li);
+        });
+    };
+
+    const randomLetter = () => {
+      const totalWeight = letterPool.reduce((sum, set) => sum + set.weight, 0);
+      const target = Math.random() * totalWeight;
+      let cumulative = 0;
+      for (const set of letterPool) {
+        cumulative += set.weight;
+        if (target <= cumulative) {
+          const letters = set.letters;
+          const letter = letters[Math.floor(Math.random() * letters.length)];
+          return { letter, value: set.value };
+        }
+      }
+      return { letter: "E", value: 1 };
+    };
+
+    const generateBoard = () => {
+      const tiles = Array.from({ length: 25 }, () => ({ ...randomLetter(), id: crypto.randomUUID() }));
+      const availableIndexes = [...tiles.keys()];
+
+      const assignSpecial = (tilesToAssign, key) => {
+        for (const type of tilesToAssign) {
+          if (!availableIndexes.length) break;
+          const idx = availableIndexes.splice(Math.floor(Math.random() * availableIndexes.length), 1)[0];
+          tiles[idx] = { ...tiles[idx], [key]: type };
+        }
+      };
+
+      assignSpecial(multiplierTiles, "multiplier");
+      assignSpecial(wordTiles, "word");
+
+      const gemIndexes = [...availableIndexes].sort(() => Math.random() - 0.5).slice(0, gemTileCount);
+      for (const idx of gemIndexes) {
+        tiles[idx] = { ...tiles[idx], gem: true };
+      }
+
+      return tiles;
+    };
+
+    const renderBoard = () => {
+      boardEl.innerHTML = "";
+      board.forEach((tile) => {
+        const tileEl = document.createElement("div");
+        tileEl.className = "tile";
+        if (tile.multiplier) tileEl.dataset.multiplier = tile.multiplier;
+        if (tile.word) tileEl.dataset.word = tile.word;
+        if (tile.gem) tileEl.dataset.gem = "true";
+        tileEl.innerHTML = `
+          <div class="letter">${tile.letter}</div>
+          <div class="value">${tile.value}pt</div>
+        `;
+        boardEl.appendChild(tileEl);
+      });
+    };
+
+    const updateGemCount = (value) => {
+      gemCount = Math.max(0, Math.min(10, value));
+      gemCountEl.textContent = gemCount;
+      gemButtons.forEach((button) => {
+        const cost = Number(button.querySelector("span").textContent.replace(/[^0-9]/g, ""));
+        button.disabled = gemCount < cost;
+      });
+    };
+
+    const spendGems = (cost) => {
+      if (gemCount < cost) return false;
+      updateGemCount(gemCount - cost);
+      return true;
+    };
+
+    const applyShuffle = () => {
+      if (!spendGems(1)) return;
+      board = generateBoard();
+      renderBoard();
+      flashStatus("Board shuffled", "info");
+    };
+
+    const applySwap = () => {
+      if (!spendGems(3)) return;
+      const idxA = Math.floor(Math.random() * board.length);
+      let idxB = Math.floor(Math.random() * board.length);
+      while (idxB === idxA) idxB = Math.floor(Math.random() * board.length);
+      [board[idxA], board[idxB]] = [board[idxB], board[idxA]];
+      renderBoard();
+      flashStatus("Two tiles swapped", "info");
+    };
+
+    const applyHint = () => {
+      if (!spendGems(4)) return;
+      const candidate = [...board].sort((a, b) => b.value - a.value)[0];
+      if (!candidate) return;
+      flashStatus(`Look for words with <strong>${candidate.letter}</strong> for max value!`, "hint");
+    };
+
+    const actionHandlers = {
+      shuffle: applyShuffle,
+      swap: applySwap,
+      hint: applyHint
+    };
+
+    gemButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const action = button.dataset.action;
+        actionHandlers[action]?.();
+      });
+    });
+
+    const flashStatus = (message, type = "info") => {
+      status.innerHTML = message;
+      status.dataset.type = type;
+      if (type === "hint") {
+        status.style.color = "var(--success)";
+      } else {
+        status.style.color = "var(--muted)";
+      }
+      setTimeout(() => {
+        status.style.color = "var(--muted)";
+      }, 3200);
+    };
+
+    const scoreWord = (word) => {
+      const letters = word.toUpperCase().split("");
+      const letterCounts = {};
+      letters.forEach((letter) => {
+        letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+      });
+
+      let baseScore = 0;
+      let wordMultiplier = 1;
+      let gemsEarned = 0;
+
+      const boardCopy = board.map((tile) => ({ ...tile, used: false }));
+
+      for (const letter of letters) {
+        const tileIndex = boardCopy.findIndex((tile) => tile.letter === letter && !tile.used);
+        if (tileIndex === -1) return null;
+
+        const tile = boardCopy[tileIndex];
+        tile.used = true;
+
+        let letterScore = tile.value;
+        if (tile.multiplier === "DL") letterScore *= 2;
+        if (tile.multiplier === "TL") letterScore *= 3;
+        baseScore += letterScore;
+
+        if (tile.word === "DW") wordMultiplier *= 2;
+        if (tile.word === "TW") wordMultiplier *= 3;
+        if (tile.gem) gemsEarned += 1;
+      }
+
+      if (letters.length >= 6) baseScore += 10;
+
+      gemsEarned = Math.min(gemsEarned, Math.max(0, 10 - gemCount));
+
+      return {
+        score: baseScore * wordMultiplier,
+        gems: gemsEarned
+      };
+    };
+
+    const addWordToHistory = (word, score) => {
+      const entry = document.createElement("div");
+      entry.className = "word-entry";
+      entry.innerHTML = `<strong>${word.toUpperCase()}</strong><span>+${score} pts</span>`;
+      wordHistory.prepend(entry);
+    };
+
+    wordForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const formData = new FormData(wordForm);
+      const submittedWord = String(formData.get("word")).trim();
+      if (!submittedWord) return;
+      const result = scoreWord(submittedWord);
+      if (!result) {
+        flashStatus("Letters must exist on the board", "error");
+        status.style.color = "var(--danger)";
+        return;
+      }
+
+      addWordToHistory(submittedWord, result.score);
+      const player = samplePlayers.find((p) => p.id === "me");
+      if (player) player.score += result.score;
+      if (result.gems > 0) updateGemCount(gemCount + result.gems);
+      renderPlayers();
+      flashStatus(`Word scored ${result.score} points`, "success");
+      status.style.color = "var(--success)";
+      wordForm.reset();
+      wordInput.focus();
+    });
+
+    const resetTimer = () => {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timeRemaining = 30;
+      timeRemainingEl.textContent = timeRemaining;
+      startTimerBtn.disabled = false;
+    };
+
+    startTimerBtn.addEventListener("click", () => {
+      if (timerInterval) return;
+      startTimerBtn.disabled = true;
+      flashStatus("Round started", "info");
+      timerInterval = setInterval(() => {
+        timeRemaining -= 1;
+        timeRemainingEl.textContent = Math.max(0, timeRemaining);
+        if (timeRemaining <= 0) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          flashStatus("Round complete", "success");
+          status.style.color = "var(--success)";
+          setTimeout(() => startTimerBtn.removeAttribute("disabled"), 1200);
+        }
+      }, 1000);
+    });
+
+    const initDiscord = async () => {
+      const { discordSdk } = window;
+      if (!discordSdk) {
+        flashStatus("Discord SDK unavailable", "error");
+        status.style.color = "var(--danger)";
+        return;
+      }
+
+      try {
+        await discordSdk.ready;
+        const auth = await discordSdk.commands.authenticate();
+        const player = samplePlayers.find((p) => p.id === "me");
+        if (player) player.name = auth.user.username;
+        renderPlayers();
+        flashStatus(`Authenticated as ${auth.user.username}`, "success");
+        status.style.color = "var(--success)";
+      } catch (error) {
+        console.error(error);
+        flashStatus("Failed to authenticate with Discord", "error");
+        status.style.color = "var(--danger)";
+      }
+    };
+
+    const boot = () => {
+      board = generateBoard();
+      renderBoard();
+      updateGemCount(gemCount);
+      renderPlayers();
+      resetTimer();
+      initDiscord();
+    };
+
+    boot();
+  </script>
+</body>
+</html>

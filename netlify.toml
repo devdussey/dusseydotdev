@@ -1,0 +1,17 @@
+# Main site deployment
+[build]
+  publish = "/"
+  command = "echo 'Static site'"
+
+# Redirect rules for different paths
+[[redirects]]
+  from = "/wordhex/*"
+  to = "/wordhex/index.html"
+  status = 200
+
+# Headers for Discord Activity CSP
+[[headers]]
+  for = "/wordhex/*"
+  [headers.values]
+    Content-Security-Policy = "frame-ancestors https://discord.com https://*.discordapp.com;"
+    Access-Control-Allow-Origin = "*"
