@@ -1,6 +1,7 @@
 {
   "name": "dussey-dev",
   "version": "1.0.0",
+  "type": "module",
   "description": "DevDussey Portfolio - Workspace, Photo Editor, and WordHex Game",
   "main": "index.js",
   "scripts": {
@@ -8,7 +9,8 @@
     "package:wordhex-activity": "cd wordhex/discord-activity && rm -f ../wordhex-activity.zip && zip -rq ../wordhex-activity.zip activity_manifest.json entry-point-commands.json public"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.38.0"
+    "@supabase/supabase-js": "^2.38.0",
+    "jsonwebtoken": "^9.0.0"
   },
   "devDependencies": {},
   "keywords": [

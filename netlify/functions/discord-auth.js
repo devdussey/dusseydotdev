@@ -1,109 +1,130 @@
-// Netlify Function: Discord OAuth Handler
-// Exchanges Discord auth code for user data and stores in Supabase
+import { createClient } from '@supabase/supabase-js';
+import jwt from 'jsonwebtoken';
+import { env } from '@netlify/functions';
 
-const { createClient } = require('@supabase/supabase-js');
+const REDIRECT_FALLBACK = 'https://dussey.dev/.netlify/functions/discord-auth';
+const REQUEST_BASE_URL = 'https://dussey.dev';
+const DISCORD_TOKEN_URL = 'https://discord.com/api/v10/oauth2/token';
+const DISCORD_USER_URL = 'https://discord.com/api/v10/users/@me';
 
-// Initialize Supabase with service role key
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const configErrorResponse = {
+  statusCode: 500,
+  body: JSON.stringify({ error: 'Server configuration error' })
+};
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('Missing Supabase env vars');
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  db: {
-    schema: 'api'
+const redirectToLogin = (errorCode) => ({
+  statusCode: 302,
+  headers: {
+    Location: `/wordhex/login.html?error=${errorCode}`
   }
 });
 
-// Discord OAuth credentials
-const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
-const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const REDIRECT_URI = 'https://dussey.dev/.netlify/functions/discord-auth';
-
-exports.handler = async (event) => {
+const safeParseJson = async (response) => {
   try {
+    return await response.json();
+  } catch (parseError) {
+    console.error('Unable to parse JSON response:', parseError);
+    return null;
+  }
+};
+
+export default async function handler(request) {
+  const supabaseUrl = env.get('VITE_SUPABASE_URL');
+  const supabaseServiceKey = env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('Missing Supabase env vars');
+    return configErrorResponse;
+  }
+
+  const discordClientId = env.get('DISCORD_CLIENT_ID');
+  const discordClientSecret = env.get('DISCORD_CLIENT_SECRET');
+  const redirectUri = env.get('DISCORD_REDIRECT_URI') ?? REDIRECT_FALLBACK;
+  const sessionSecret = env.get('SUPABASE_JWT_SECRET');
+
+  if (!discordClientId || !discordClientSecret) {
+    console.error('Missing Discord OAuth credentials');
+    return configErrorResponse;
+  }
+
+  if (!redirectUri) {
+    console.error('Missing Discord redirect URI');
+    return configErrorResponse;
+  }
+
+  if (!sessionSecret) {
+    console.error('Missing session signing secret');
+    return configErrorResponse;
+  }
+
+  try {
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      db: {
+        schema: 'api'
+      }
+    });
+
     console.log('OAuth callback received');
+    const requestUrl = new URL(request.url, REQUEST_BASE_URL);
+    const code = requestUrl.searchParams.get('code');
+    const state = requestUrl.searchParams.get('state');
+    const error = requestUrl.searchParams.get('error');
 
-    // Get authorization code from Discord
-    const { code, state, error } = event.queryStringParameters || {};
-
-    // Handle Discord errors
     if (error) {
-      console.log('Discord error:', error);
-      return {
-        statusCode: 302,
-        headers: {
-          Location: `/wordhex/login.html?error=${error}`
-        }
-      };
+      console.log('Discord error:', error, 'state=', state);
+      return redirectToLogin(error);
     }
 
     if (!code) {
       console.error('Missing authorization code');
-      return {
-        statusCode: 302,
-        headers: {
-          Location: `/wordhex/login.html?error=no_code`
-        }
-      };
+      return redirectToLogin('no_code');
     }
 
     console.log('Exchanging code for token...');
-
-    // Step 1: Exchange code for access token
-    const tokenResponse = await fetch('https://discord.com/api/v10/oauth2/token', {
+    const tokenResponse = await fetch(DISCORD_TOKEN_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: new URLSearchParams({
-        client_id: DISCORD_CLIENT_ID,
-        client_secret: DISCORD_CLIENT_SECRET,
+        client_id: discordClientId,
+        client_secret: discordClientSecret,
         grant_type: 'authorization_code',
-        code: code,
-        redirect_uri: REDIRECT_URI
+        code,
+        redirect_uri: redirectUri
       }).toString()
     });
 
+    const tokenData = await safeParseJson(tokenResponse);
+
     if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.json();
-      console.error('Discord token exchange failed:', errorData);
-      return {
-        statusCode: 302,
-        headers: {
-          Location: `/wordhex/login.html?error=token_failed`
-        }
-      };
+      console.error('Discord token exchange failed:', tokenData ?? { status: tokenResponse.status });
+      return redirectToLogin('token_failed');
     }
 
-    const tokenData = await tokenResponse.json();
-    const access_token = tokenData.access_token;
+    if (!tokenData || !tokenData.access_token) {
+      console.error('No access token in Discord response', tokenData);
+      return redirectToLogin('token_failed');
+    }
 
+    const accessToken = tokenData.access_token;
     console.log('Got access token, fetching user...');
 
-    // Step 2: Get user data from Discord
-    const userResponse = await fetch('https://discord.com/api/v10/users/@me', {
+    const userResponse = await fetch(DISCORD_USER_URL, {
       headers: {
-        Authorization: `Bearer ${access_token}`
+        Authorization: `Bearer ${accessToken}`
       }
     });
 
-    if (!userResponse.ok) {
-      console.error('Failed to get Discord user:', userResponse.status);
-      return {
-        statusCode: 302,
-        headers: {
-          Location: `/wordhex/login.html?error=user_failed`
-        }
-      };
+    const discordUser = await safeParseJson(userResponse);
+
+    if (!userResponse.ok || !discordUser?.id) {
+      console.error('Failed to get Discord user:', userResponse.status, discordUser);
+      return redirectToLogin('user_failed');
     }
 
-    const discordUser = await userResponse.json();
     console.log('Got Discord user:', discordUser.id);
 
-    // Step 3: Store/update user in Supabase
     const avatarUrl = discordUser.avatar
       ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
       : null;
@@ -157,34 +178,24 @@ exports.handler = async (event) => {
       console.log('User created');
     }
 
-    // Step 4: Create session token
-    const sessionToken = Buffer.from(JSON.stringify({
-      userId: userId,
+    const sessionToken = jwt.sign({
+      userId,
       discordId: discordUser.id,
       username: discordUser.username,
-      avatar: discordUser.avatar,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60)
-    })).toString('base64');
+      avatar: discordUser.avatar
+    }, sessionSecret, { expiresIn: '7d' });
 
     console.log('Login successful!');
 
-    // Step 5: Redirect to game with session
     return {
       statusCode: 302,
       headers: {
-        Location: `/wordhex/?session=${sessionToken}&user=${encodeURIComponent(discordUser.username)}`
+        Location: `/wordhex/?session=${encodeURIComponent(sessionToken)}&user=${encodeURIComponent(discordUser.username)}`
       }
     };
-
   } catch (error) {
-    console.error('OAuth handler error:', error.message);
+    console.error('OAuth handler error:', error?.message ?? error);
     console.error('Full error:', error);
-    return {
-      statusCode: 302,
-      headers: {
-        Location: `/wordhex/login.html?error=server_error`
-      }
-    };
+    return redirectToLogin('server_error');
   }
-};
+}
