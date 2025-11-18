@@ -1,0 +1,5 @@
+[build]
+  publish = "/"
+
+[build.environment]
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyB-7IHqfyTn4OuFx36LNl5sAuVS-UjZF6g"
