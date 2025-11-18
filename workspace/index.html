@@ -45,6 +45,23 @@
     color: rgba(255, 255, 255, 0.6);
   }
 
+  .btn-editor {
+    padding: 8px 18px;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    border-radius: 8px;
+    color: #93c5fd;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .btn-editor:hover {
+    background: rgba(59, 130, 246, 0.3);
+    color: #bfdbfe;
+  }
+
   .btn-logout {
     padding: 8px 20px;
     background: rgba(239, 68, 68, 0.2);
@@ -390,6 +407,7 @@
 <div class="header">
   <h1>🚀 Workspace</h1>
   <div class="header-actions">
+    <a class="btn-editor" href="./editor/" id="editorBtn">Editor</a>
     <span class="user-email" id="userEmail"></span>
     <button class="btn-logout" id="logoutBtn">Logout</button>
   </div>
