@@ -118,7 +118,10 @@ exports.handler = async (event) => {
         userId = insertResult.rows[0].id;
       }
     } catch (dbError) {
-      console.error('Database operation error:', dbError);
+      console.error('Database operation error:', dbError.message);
+      console.error('Error code:', dbError.code);
+      console.error('Error details:', dbError);
+      console.error('DATABASE_URL set:', !!process.env.DATABASE_URL);
       return {
         statusCode: 302,
         headers: {
